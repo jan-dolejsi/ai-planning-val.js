@@ -1,6 +1,6 @@
 {
-  "name": "@ai-planning/val.js",
-  "version": "1.0.0",
+  "name": "ai-planning-val",
+  "version": "1.0.1",
   "description": "Javascript/typescript wrapper for VAL (plan validation tools from KCL Planning department).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
