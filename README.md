@@ -5,6 +5,16 @@
 
 Javascript/typescript wrapper for VAL (plan validation tools from [KCL Planning department](https://github.com/KCL-Planning/VAL)).
 
+- [VAL.js - AI Planning Plan Validation](#valjs---ai-planning-plan-validation)
+  - [VAL Download](#val-download)
+  - [ValStep state-by-state plan evaluation](#valstep-state-by-state-plan-evaluation)
+    - [Batch plan evaluation](#batch-plan-evaluation)
+    - [Batch evaluation with notification events fired for each intermediate state](#batch-evaluation-with-notification-events-fired-for-each-intermediate-state)
+    - [Interactive plan execution](#interactive-plan-execution)
+  - [`PlanEvaluator` class](#planevaluator-class)
+  - [`PlanFunctionEvaluator` class](#planfunctionevaluator-class)
+  - [`HappeningsToValStep` utility](#happeningstovalstep-utility)
+
 ## VAL Download
 
 This package includes utility to download the VAL binaries. Select the build number, destination folder
@@ -40,7 +50,7 @@ The `val.json` is a machine readable manifest for easy consumption into any prog
   "parserPath": "Val-20190911.1-win64/bin/Parser.exe",
   "validatePath": "Val-20190911.1-win64/bin/Validate.exe",
   "valueSeqPath": "Val-20190911.1-win64/bin/ValueSeq.exe",
-  "valStep": "Val-20190911.1-win64/bin/ValStep.exe"
+  "valStepPath": "Val-20190911.1-win64/bin/ValStep.exe"
 }
 ```
 
@@ -151,7 +161,7 @@ valStep.onStateUpdated((happenings, newValues) => {
 });
 
 const valuesAtEnd = await valStep.executeIncrementally(allHappenings, {
-    valStepPath: valManifest.valStep ?? 'ValStep'
+    valStepPath: valManifest.valStepPath ?? 'ValStep'
 });
 ```
 
@@ -159,7 +169,58 @@ const valuesAtEnd = await valStep.executeIncrementally(allHappenings, {
 
 Evaluates the final state of the provided plan.
 
-## `GroundedFunctionValues` class
+Let's consider this temporal and numeric PDDL [domain](test/samples/temporal-numeric/domain.pddl), [problem](test/samples/temporal-numeric/problem.pddl) and plan:
+
+```lisp
+;;!domain: domain1
+;;!problem: problem1
+
+0.00100: (action1 o1) [10.00000]
+
+; Makespan: 10.001
+; Cost: 10.001
+; States evaluated: 2
+```
+
+```typescript
+const plan = parser.PddlPlanParser.parseText(planText, 0.001, 'test/samples/temporal-numeric/problem.plan');
+
+const planEvaluator = new PlanEvaluator(() => './val-binaries/..../ValStep);
+
+const finalState = await planEvaluator.evaluate(domain, problem, plan);
+console.log(JSON.stringify(finalState, null, 2));
+```
+
+The console should show this state vector (from the end of the plan):
+
+```json
+[
+  {
+    "time": 10.001,
+    "variableName": "q o1",
+    "value": true,
+  },
+  {
+    "time": 10.001,
+    "variableName": "p o1",
+    "value": true,
+  },
+  {
+    "time": 10.001,
+    "variableName": "f o1",
+    "value": 30,
+  }
+]
+```
+
+This utility is using ValStep in the batch mode, so the state values
+all appear to have the same timestamp (timestamp of the last happening)
+regardless what was the state at which those values were actually created.
+
+> Only state values that were modified in the course of the plan,
+> or were initialized in the original problem file are exported.
+
+## `PlanFunctionEvaluator` class
 
 Evaluates numeric function values as they change in the course of the plan.
 

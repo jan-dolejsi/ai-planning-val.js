@@ -32,7 +32,7 @@ describe("ValDownloader", () => {
                 }
 
                 await assertExists(VAL_DIRECTORY, downloadedVersion?.parserPath, "Parser");
-                await assertExists(VAL_DIRECTORY, downloadedVersion?.valStep, "ValStep");
+                await assertExists(VAL_DIRECTORY, downloadedVersion?.valStepPath, "ValStep");
                 await assertExists(VAL_DIRECTORY, downloadedVersion?.validatePath, "Validate");
                 await assertExists(VAL_DIRECTORY, downloadedVersion?.valueSeqPath, "ValueSeq");
             }
@@ -43,9 +43,9 @@ describe("ValDownloader", () => {
 
         it("changed chmod", async () => {
             const manifest = await readValManifest(VAL_MANIFEST);
-            expect(manifest.valStep, "valstep should be present").to.not.be.undefined;
-            if (manifest.valStep) {
-                fs.accessSync(path.join('.', VAL_DIRECTORY, manifest.valStep), fs.constants.X_OK);
+            expect(manifest.valStepPath, "valstep should be present").to.not.be.undefined;
+            if (manifest.valStepPath) {
+                fs.accessSync(path.join('.', VAL_DIRECTORY, manifest.valStepPath), fs.constants.X_OK);
             }
         });
     });

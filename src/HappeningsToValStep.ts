@@ -16,12 +16,24 @@ export class HappeningsToValStep {
         this.convert(happenings.getHappenings());
     }
 
-    convert(happenings: Happening[]): string {
+    convert(happenings: Happening[], batchId?: number): string {
+        const header = [];
+        const footer = [];
+        if (batchId !== undefined) { 
+            const minTime = Math.min(...happenings.map(h => h.getTime()));
+            const maxTime = Math.max(...happenings.map(h => h.getTime()));
+            const message = `batch [${batchId}]: ${happenings.length} happening(s) from time ${minTime} up to time ${maxTime}.`;
+            header.push('e Posting ' + message);
+            footer.push('e Executed ' + message);
+        }
         const newSteps = happenings.map(h => this.happeningToValStep(h));
+        
         const newStepsFlatten = utils.Util.flatMap(newSteps);
         newStepsFlatten.push('x');
-        this.valStepText = this.valStepText.concat(newStepsFlatten);
-        return newStepsFlatten.join('\n') + '\n';
+        
+        const valStepInstructions = utils.Util.flatMap([header, newStepsFlatten, footer]);
+        this.valStepText = this.valStepText.concat(valStepInstructions);
+        return valStepInstructions.join('\n') + '\n';
     }
 
     getExportedText(andQuit: boolean): string {

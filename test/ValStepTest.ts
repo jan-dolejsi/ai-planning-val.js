@@ -1,9 +1,8 @@
 import { expect } from 'chai';
 
-import { ValStep, readValManifest, ValVersion } from './src';
+import { ValStep } from './src';
 import { parser, Happening, HappeningType, DomainInfo, ProblemInfo, utils } from 'pddl-workspace';
-import { fail } from 'assert';
-import path from 'path';
+import * as testUtils from './testUtils';
 
 const domainText = `(define (domain domain1)
 
@@ -32,28 +31,11 @@ const problemText = `(define (problem problem1) (:domain domain1)
 )
 `;
 
-let valManifest: ValVersion | undefined;
-let valStepPath: string | undefined;
-const VAL_DOWNLOAD = 'val';
-
-async function f(): Promise<ValVersion> {
-    const manifestPath = path.join(VAL_DOWNLOAD, 'val.json');
-    if (!(await utils.afs.exists(manifestPath))) {
-        fail("VAL not downloaded");
-        // return;
-    }
-    return await readValManifest(manifestPath);
-}
-f().then(manifest => {
-    valManifest = manifest;
-    valStepPath = valManifest?.valStep ? path.join(VAL_DOWNLOAD, valManifest?.valStep) : 'ValStep'
-    console.log(`Valstep path ${valStepPath} found in binary manifest: ${manifest.buildId}`);
-});
-
-describe("ValStep", async() => {
+describe("ValStep", async () => {
 
     let domain: DomainInfo;
     let problem: ProblemInfo;
+    let valStepPath: string | undefined;
 
     before(async () => {
         const parsedDomain = parser.PddlDomainParser.parseText(domainText);
@@ -70,18 +52,22 @@ describe("ValStep", async() => {
         }
 
         problem = parsedProblem;
+
+        valStepPath = testUtils.getValToolPath(await testUtils.getDownloadedManifest(), manifest => manifest.valStepPath);
     });
 
     describe("#executeBatch()", () => {
 
         it("calculates state values", done => {
 
+            // GIVEN
             const allHappenings = [
                 new Happening(0.001, HappeningType.INSTANTANEOUS, 'a', 0)
             ];
 
             const valStep = new ValStep(domain, problem);
 
+            // WHEN
             valStep.executeBatch(allHappenings, {
                 valStepPath: valStepPath,
                 verbose: true
@@ -97,6 +83,7 @@ describe("ValStep", async() => {
 
         it("notifies about state update", async () => {
 
+            // GIVEN
             const allHappenings = [
                 new Happening(0.001, HappeningType.INSTANTANEOUS, 'a', 0)
             ];
@@ -116,6 +103,7 @@ describe("ValStep", async() => {
                         resolve();
                     });
 
+                // WHEN
                 const valuesAtEnd = await valStep.executeIncrementally(allHappenings, {
                     valStepPath: valStepPath
                 });
@@ -129,6 +117,7 @@ describe("ValStep", async() => {
 
         it.skip("notifies about state update", async () => {
 
+            // GIVEN
             const happeningsAtTime0 = [
                 new Happening(0.001, HappeningType.INSTANTANEOUS, 'a', 0)
             ];
@@ -149,10 +138,11 @@ describe("ValStep", async() => {
                     });
 
                 try {
+                    // WHEN
                     const posted = await valStep.postHappenings(happeningsAtTime0, {
                         valStepPath: valStepPath,
                         timeout: 1,
-                        verbose: true
+                        verbose: false
                     });
 
                     expect(posted).to.equal(true);

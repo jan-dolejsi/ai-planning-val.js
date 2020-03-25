@@ -1,0 +1,8 @@
+;;!domain: domain1
+;;!problem: problem1
+
+0.00100: (action1 o1) [10.00000]
+
+; Makespan: 10.001
+; Cost: 10.001
+; States evaluated: 2

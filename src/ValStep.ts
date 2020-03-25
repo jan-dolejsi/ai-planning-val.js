@@ -12,7 +12,6 @@ import { parser } from 'pddl-workspace';
 import { ProblemInfo, TimedVariableValue, VariableValue } from 'pddl-workspace';
 import { DomainInfo } from 'pddl-workspace';
 import { Happening } from 'pddl-workspace';
-import { SimpleDocumentPositionResolver } from 'pddl-workspace';
 
 import { HappeningsToValStep } from './HappeningsToValStep';
 
@@ -141,6 +140,8 @@ export class ValStep extends EventEmitter {
                 }
                 const eventualProblem = that.outputBuffer;
                 const newValues = await that.extractInitialState(eventualProblem);
+                // shift the time of the values to the plan makespan
+                newValues?.forEach(v => v.update(that.happeningsConvertor.makespan, v.getVariableValue()));
                 resolve(newValues);
             });
         });
@@ -161,15 +162,17 @@ export class ValStep extends EventEmitter {
 
         let valStepInput = '';
 
-        for (const time of groupedHappenings.keys()) {
-            const happeningGroup = groupedHappenings.get(time);
-            if (happeningGroup) {
-                const valSteps = this.happeningsConvertor.convert(happeningGroup);
-                valStepInput += valSteps;
-            } else {
-                console.warn(`Did not find happening group corresponding to time ${time}.`);
-            }
-        }
+        [...groupedHappenings.keys()]
+            .sort((a, b) => a - b)
+            .forEach((time, batchId) => {
+                const happeningGroup = groupedHappenings.get(time);
+                if (happeningGroup) {
+                    const valSteps = this.happeningsConvertor.convert(happeningGroup, batchId);
+                    valStepInput += valSteps;
+                } else {
+                    console.warn(`Did not find happening group corresponding to time ${time}.`);
+                }
+        });
 
         valStepInput += ValStep.QUIT_INSTRUCTION;
 
@@ -261,8 +264,7 @@ export class ValStep extends EventEmitter {
      * @returns variable values array, or null if the tool failed
      */
     private async extractInitialState(problemText: string): Promise<TimedVariableValue[] | undefined> {
-        const syntaxTree = new parser.PddlSyntaxTreeBuilder(problemText).getTree();
-        const problemInfo = await new parser.Parser().tryProblem("eventual-problem://not-important", 0, problemText, syntaxTree, new SimpleDocumentPositionResolver(problemText));
+        const problemInfo = await parser.PddlProblemParser.parseText(problemText);
 
         if (!problemInfo) { return undefined; }
 

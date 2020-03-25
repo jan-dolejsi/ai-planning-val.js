@@ -7,3 +7,6 @@ out/
 
 # val downloaded for testing
 val/
+
+# logs
+**/logs/

@@ -86,7 +86,7 @@ export class ValDownloader {
             parserPath: findValToolPath(valToolFileNames, PARSER_FILE_NAME),
             validatePath: findValToolPath(valToolFileNames, VALIDATE_FILE_NAME),
             valueSeqPath: findValToolPath(valToolFileNames, VALUE_SEQ_FILE_NAME),
-            valStep: findValToolPath(valToolFileNames, VAL_STEP_FILE_NAME)
+            valStepPath: findValToolPath(valToolFileNames, VAL_STEP_FILE_NAME)
         };
 
         this.allowExecution(destinationDirectory, manifest);
@@ -174,7 +174,7 @@ export class ValDownloader {
 
     allowExecution(targetDirectory: string, manifest: ValVersion): void {
         const executePermission = fs.constants.S_IXUSR | fs.constants.S_IRGRP;
-        [manifest.parserPath, manifest.valStep, manifest.validatePath, manifest.valueSeqPath]
+        [manifest.parserPath, manifest.valStepPath, manifest.validatePath, manifest.valueSeqPath]
             .filter(tool => !!tool)
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             .map(tool => tool!)
@@ -200,7 +200,7 @@ export interface ValVersion {
     readonly parserPath?: string;
     readonly validatePath?: string;
     readonly valueSeqPath?: string;
-    readonly valStep?: string;
+    readonly valStepPath?: string;
 }
 
 /**
