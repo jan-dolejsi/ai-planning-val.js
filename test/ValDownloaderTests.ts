@@ -1,7 +1,8 @@
 import { expect } from 'chai';
-import { ValDownloader, writeValManifest } from './src';
+import { ValDownloader, readValManifest, writeValManifest } from './src';
 import { utils } from 'pddl-workspace';
 import path from 'path';
+import fs from 'fs';
 
 async function assertExists(targetDirectory: string, relativePath?: string, toolName?: string): Promise<void> {
     expect(relativePath, toolName + " should not be undefined.").to.not.be.undefined;
@@ -12,8 +13,8 @@ async function assertExists(targetDirectory: string, relativePath?: string, tool
 }
 
 const expectedBuildId = 37;
-export const VAL_DIRECTORY = `build${expectedBuildId}`;
-export const VAL_MANIFEST = path.join(VAL_DIRECTORY, 'val.json');
+const VAL_DIRECTORY = 'val';
+export const VAL_MANIFEST = path.join('.', VAL_DIRECTORY, 'val.json');
 
 describe("ValDownloader", () => {
 
@@ -39,5 +40,13 @@ describe("ValDownloader", () => {
             console.log(`Downloaded: ${downloadedVersion?.files.length}`);
             expect(downloadedVersion?.buildId).to.be.equal(expectedBuildId);
         }).timeout(10 * 1000);
+
+        it("changed chmod", async () => {
+            const manifest = await readValManifest(VAL_MANIFEST);
+            expect(manifest.valStep, "valstep should be present").to.not.be.undefined;
+            if (manifest.valStep) {
+                fs.accessSync(path.join('.', VAL_DIRECTORY, manifest.valStep), fs.constants.X_OK);
+            }
+        });
     });
 });

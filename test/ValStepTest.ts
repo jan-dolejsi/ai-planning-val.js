@@ -45,9 +45,9 @@ async function f(): Promise<ValVersion> {
     return await readValManifest(manifestPath);
 }
 f().then(manifest => {
-    console.log(manifest);
     valManifest = manifest;
     valStepPath = valManifest?.valStep ? path.join(VAL_DOWNLOAD, valManifest?.valStep) : 'ValStep'
+    console.log(`Valstep path ${valStepPath} found in binary manifest: ${manifest.buildId}`);
 });
 
 describe("ValStep", async() => {

@@ -60,6 +60,9 @@ export class ValStep extends EventEmitter {
     public static HAPPENING_EFFECTS_EVALUATED = Symbol("HAPPENING_EFFECTS_EVALUATED");
     public static NEW_HAPPENING_EFFECTS = Symbol("NEW_HAPPENING_EFFECTS");
 
+    /** Default file name */
+    private readonly VALSTEP_EXE = 'ValStep';
+
     constructor(private domainInfo: DomainInfo, private problemInfo: ProblemInfo) {
         super();
         this.variableValues = problemInfo.getInits().map(v => TimedVariableValue.copy(v));
@@ -109,7 +112,7 @@ export class ValStep extends EventEmitter {
 
         return new Promise<TimedVariableValue[]>(async (resolve, reject) => {
             this.logValStepCommand(options, args);
-            const child = that.childProcess = process.spawn(options?.valStepPath ?? this.VALSTEP_EXE, args, options);
+            const child = that.childProcess = process.spawn(this.createValCommand(options), args, options);
 
             let outputtingProblem = false;
             if (!child.stdout) {
@@ -143,13 +146,15 @@ export class ValStep extends EventEmitter {
         });
     }
 
-    logValStepCommand(options: ValStepOptions | undefined, args: string[]): void {
-        if (options?.verbose) {
-            console.log(`ValStep command: ${options.valStepPath ?? this.VALSTEP_EXE}\nValStep args: ${args.join(' ')}\nValStep cwd: ${options.cwd}`);
-        }
+    createValCommand(options?: ValStepOptions): string {
+        return options?.valStepPath ?? this.VALSTEP_EXE;
     }
 
-    private readonly VALSTEP_EXE = 'ValStep';
+    logValStepCommand(options: ValStepOptions | undefined, args: string[]): void {
+        if (options?.verbose) {
+            console.log(`ValStep command: ${this.createValCommand(options)}\nValStep args: ${args.join(' ')}\nValStep cwd: ${options.cwd}`);
+        }
+    }
 
     private convertHappeningsToValStepInput(happenings: Happening[]): string {
         const groupedHappenings = utils.Util.groupBy(happenings, (h: Happening) => h.getTime());
@@ -188,7 +193,7 @@ export class ValStep extends EventEmitter {
 
         return new Promise<TimedVariableValue[]>(async (resolve, reject) => {
             this.logValStepCommand(options, args);
-            const child = that.childProcess = process.execFile(options?.valStepPath ?? this.VALSTEP_EXE, args, { cwd: options?.cwd, timeout: 2000, maxBuffer: 2 * 1024 * 1024 }, async (error, stdout, stderr) => {
+            const child = that.childProcess = process.execFile(this.createValCommand(options), args, { cwd: options?.cwd, timeout: 2000, maxBuffer: 2 * 1024 * 1024 }, async (error, stdout, stderr) => {
                 if (error) {
                     reject(new ValStepError(error.message, this.domainInfo, this.problemInfo, this.valStepInput));
                     return;
@@ -270,7 +275,7 @@ export class ValStep extends EventEmitter {
         }
         const args = await this.createValStepArgs();
         this.logValStepCommand(options, args);
-        return this.childProcess = process.execFile(options?.valStepPath ?? this.VALSTEP_EXE, args, options);
+        return this.childProcess = process.execFile(this.createValCommand(options), args, options);
     }
 
     /**

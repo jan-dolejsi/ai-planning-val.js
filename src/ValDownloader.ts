@@ -81,13 +81,17 @@ export class ValDownloader {
         // delete the drop zip
         await utils.afs.unlink(zipPath);
 
-        return {
+        const manifest: ValVersion = {
             buildId: buildId, version: version, files: valToolFileNames,
             parserPath: findValToolPath(valToolFileNames, PARSER_FILE_NAME),
             validatePath: findValToolPath(valToolFileNames, VALIDATE_FILE_NAME),
             valueSeqPath: findValToolPath(valToolFileNames, VALUE_SEQ_FILE_NAME),
             valStep: findValToolPath(valToolFileNames, VAL_STEP_FILE_NAME)
         };
+
+        this.allowExecution(destinationDirectory, manifest);
+
+        return manifest;
     }
 
     async decompress(compressedFilePath: string, destinationDirectory: string): Promise<string[]> {
@@ -168,6 +172,17 @@ export class ValDownloader {
         }
     }
 
+    allowExecution(targetDirectory: string, manifest: ValVersion): void {
+        const executePermission = fs.constants.S_IXUSR | fs.constants.S_IRGRP;
+        [manifest.parserPath, manifest.valStep, manifest.validatePath, manifest.valueSeqPath]
+            .filter(tool => !!tool)
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            .map(tool => tool!)
+            .forEach(tool => {
+                fs.chmodSync(path.join('.', targetDirectory, tool), executePermission)
+            });
+    }
+
     private unsupportedOperatingSystem(): UnsupportedOperatingSystem {
         return new UnsupportedOperatingSystem(["win32", "linux", "darwin"], os.platform());
     }
@@ -182,10 +197,10 @@ export interface ValVersion {
     readonly buildId: number;
     readonly version: string;
     readonly files: string[];
-    readonly parserPath?: string; 
+    readonly parserPath?: string;
     readonly validatePath?: string;
-    readonly valueSeqPath?: string; 
-    readonly valStep?: string; 
+    readonly valueSeqPath?: string;
+    readonly valStep?: string;
 }
 
 /**
