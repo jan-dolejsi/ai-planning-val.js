@@ -1,12 +1,16 @@
 {
   "name": "ai-planning-val",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Javascript/typescript wrapper for VAL (plan validation tools from KCL Planning department).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "downloadVal": "./dist/downloadVal.js"
+  },
   "scripts": {
+    "downloadVal": "npx downloadVal --destination=./val",
     "test": "mocha -- out/test/*.js",
-    "pretest": "npx eslint ./src/*.ts && npm run compile",
+    "pretest": "npx eslint ./src/*.ts && npm run compile && npm run downloadVal",
     "build": "npx tsc",
     "compile": "npx tsc && npm run copyToDist",
     "copyToDist": "copyfiles --error --verbose --flat ./out/src/*.* ./dist/",
@@ -25,6 +29,9 @@
     "typescript": "^3.8.3",
     "@types/node": "^13.9.1",
     "@types/events": "^3.0.0",
+    "@types/adm-zip": "^0.4.32",
+    "@types/request": "^2.48.4",
+    "@types/yargs": "11.0.0",
     "@typescript-eslint/eslint-plugin": "^2.24.0",
     "@typescript-eslint/parser": "^2.24.0",
     "@types/mocha": "^7.0.2",
@@ -37,7 +44,10 @@
     "nyc": "^15.0.0"
   },
   "dependencies": {
+    "adm-zip": "^0.4.14",
     "events": "^3.1.0",
-    "pddl-workspace": "^1.0.1"
+    "pddl-workspace": "^1.1.0",
+    "request": "^2.88.2",
+    "yargs": "^15.3.1"
   }
 }

@@ -128,7 +128,7 @@ export class PlanFunctionEvaluator {
         if (!this.valStepPath) { return []; }
         const happenings = PlanInfo.getHappenings(this.plan.steps);
 
-        const finalStateValues = await new ValStep(this.domain, this.problem).executeBatch(this.valStepPath, "", happenings);
+        const finalStateValues = await new ValStep(this.domain, this.problem).executeBatch(happenings, { valStepPath: this.valStepPath });
 
         if (finalStateValues === null) { return []; }
 

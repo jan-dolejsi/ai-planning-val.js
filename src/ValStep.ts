@@ -29,19 +29,34 @@ export class ValStepExitCode extends Error {
     }
 }
 
+/** Valstep utility execution options. */
+export interface ValStepOptions {
+    /** Valstep executable path, if undefined 'ValStep' command will be used when spawning the process. */
+    valStepPath?: string;
+    /** Current directory. If undefined, the current process `cwd` will be used. */
+    cwd?: string;
+    /** Verbose mode (more logging to the console). Default is `false`. */
+    verbose?: boolean;
+}
+
+export interface ValStepInteractiveOptions extends ValStepOptions {
+    /** Timeout to wait for a state evaluation after happening burst was posted. Default: 500ms. */
+    timeout?: number;
+}
+
 /**
  * Wraps the Valstep executable.
  */
 export class ValStep extends EventEmitter {
 
+    private childProcess: process.ChildProcess | undefined;
     private variableValues: TimedVariableValue[];
     private initialValues: TimedVariableValue[];
     private valStepInput = '';
     private outputBuffer = '';
     private happeningsConvertor: HappeningsToValStep;
-    private verbose = false;
-    private static readonly quitInstruction = 'q\n';
 
+    private static readonly QUIT_INSTRUCTION = 'q\n';
     public static HAPPENING_EFFECTS_EVALUATED = Symbol("HAPPENING_EFFECTS_EVALUATED");
     public static NEW_HAPPENING_EFFECTS = Symbol("NEW_HAPPENING_EFFECTS");
 
@@ -53,15 +68,35 @@ export class ValStep extends EventEmitter {
     }
 
     /**
-     * Executes series of plan happenings in one batch.
-     * @param valStepPath valstep path from configuration
-     * @param cwd current working directory
+     * Subscribe to the state update event.
+     * @param callback state update callback
+     * @returns `this`
+     */
+    onStateUpdated(callback: (happenings: Happening[], values: VariableValue[]) => void): ValStep {
+        return this.on(ValStep.NEW_HAPPENING_EFFECTS, callback);
+    }
+
+    /**
+     * Subscribe to the state update event (once).
+     * @param callback state update callback
+     * @returns `this`
+     */
+    onceStateUpdated(callback: (happenings: Happening[], values: VariableValue[]) => void): ValStep {
+        return this.once(ValStep.NEW_HAPPENING_EFFECTS, callback);
+    }
+
+    /**
+     * Executes series of plan happenings in one batch without waiting for incremental effect evaluation.
      * @param happenings plan happenings to play
+     * @param options ValStep execution options
      * @returns final variable values, or null in case the tool fails
      */
-    async executeBatch(valStepPath: string, cwd: string, happenings: Happening[]): Promise<TimedVariableValue[]> {
+    async executeBatch(happenings: Happening[], options?: ValStepOptions): Promise<TimedVariableValue[]> {
+        if (this.childProcess) {
+            throw new Error(`This ValStep instance was already used. Create new one`);
+        }
         this.valStepInput = this.convertHappeningsToValStepInput(happenings);
-        if (this.verbose) {
+        if (options?.verbose) {
             console.log("ValStep >>>" + this.valStepInput);
         }
 
@@ -71,15 +106,16 @@ export class ValStep extends EventEmitter {
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
-        
+
         return new Promise<TimedVariableValue[]>(async (resolve, reject) => {
-            const child = process.spawn(valStepPath, args, { cwd: cwd });
+            this.logValStepCommand(options, args);
+            const child = that.childProcess = process.spawn(options?.valStepPath ?? this.VALSTEP_EXE, args, options);
 
             let outputtingProblem = false;
 
             child.stdout.on('data', output => {
                 const outputString = output.toString("utf8");
-                if (that.verbose) { console.log("ValStep <<<" + outputString); }
+                if (options?.verbose) { console.log("ValStep <<<" + outputString); }
                 if (outputtingProblem) {
                     that.outputBuffer += outputString;
                 } else if (outputString.indexOf('(define (problem') >= 0) {
@@ -88,7 +124,7 @@ export class ValStep extends EventEmitter {
                 }
             });
 
-            child.on("error", error => 
+            child.on("error", error =>
                 reject(new ValStepError(error.message, this.domainInfo, this.problemInfo, this.valStepInput))
             );
 
@@ -102,6 +138,14 @@ export class ValStep extends EventEmitter {
             });
         });
     }
+
+    logValStepCommand(options: ValStepOptions | undefined, args: string[]): void {
+        if (options?.verbose) {
+            console.log(`ValStep command: ${options.valStepPath ?? this.VALSTEP_EXE}\nValStep args: ${args.join(' ')}\nValStep cwd: ${options.cwd}`);
+        }
+    }
+
+    private readonly VALSTEP_EXE = 'ValStep';
 
     private convertHappeningsToValStepInput(happenings: Happening[]): string {
         const groupedHappenings = utils.Util.groupBy(happenings, (h: Happening) => h.getTime());
@@ -118,31 +162,34 @@ export class ValStep extends EventEmitter {
             }
         }
 
-        valStepInput += ValStep.quitInstruction;
+        valStepInput += ValStep.QUIT_INSTRUCTION;
 
         return valStepInput;
     }
 
     /**
      * Executes series of plan happenings.
-     * @param valStepPath valstep path from configuration
-     * @param cwd current working directory
      * @param happenings plan happenings to play
-     * @returns final variable values, or null in case the tool fails
+     * @param options ValStep execution options
+     * @returns final variable values, or null/undefined in case the tool fails
      */
-    async execute(valStepPath: string, cwd: string, happenings: Happening[]): Promise<TimedVariableValue[]> {
+    async execute(happenings: Happening[], options?: ValStepOptions): Promise<TimedVariableValue[]> {
+        if (this.childProcess) {
+            throw new Error(`This ValStep instance was already used. Create new one`);
+        }
         const args = await this.createValStepArgs();
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
 
         return new Promise<TimedVariableValue[]>(async (resolve, reject) => {
-            const child = process.execFile(valStepPath, args, { cwd: cwd, timeout: 2000, maxBuffer: 2 * 1024 * 1024 }, async (error, stdout, stderr) => {
+            this.logValStepCommand(options, args);
+            const child = that.childProcess = process.execFile(options?.valStepPath ?? this.VALSTEP_EXE, args, { cwd: options?.cwd, timeout: 2000, maxBuffer: 2 * 1024 * 1024 }, async (error, stdout, stderr) => {
                 if (error) {
                     reject(new ValStepError(error.message, this.domainInfo, this.problemInfo, this.valStepInput));
                     return;
                 }
-                if (that.verbose) {
+                if (options?.verbose) {
                     console.log(stdout);
                     console.log(stderr);
                 }
@@ -154,7 +201,7 @@ export class ValStep extends EventEmitter {
             let outputtingProblem = false;
 
             child.stdout?.on('data', output => {
-                if (this.verbose) { console.log("ValStep <<<" + output); }
+                if (options?.verbose) { console.log("ValStep <<<" + output); }
                 if (outputtingProblem) {
                     this.outputBuffer += output;
                 } else if (output.indexOf('(define (problem') >= 0) {
@@ -170,17 +217,17 @@ export class ValStep extends EventEmitter {
                 if (happeningGroup) {
                     const valSteps = this.happeningsConvertor.convert(happeningGroup);
                     this.valStepInput += valSteps;
-                    
+
                     try {
                         if (!child.stdin?.write(valSteps)) {
                             reject('Failed to post happenings to valstep'); return;
                         }
-                        if (this.verbose) {
+                        if (options?.verbose) {
                             console.log("ValStep >>>" + valSteps);
                         }
                     }
                     catch (err) {
-                        if (this.verbose) {
+                        if (options?.verbose) {
                             console.log("ValStep input causing error: " + valSteps);
                         }
                         reject('Sending happenings to valstep caused error: ' + err); return;
@@ -191,11 +238,11 @@ export class ValStep extends EventEmitter {
                 }
             }
 
-            this.valStepInput += ValStep.quitInstruction;
-            if (this.verbose) {
-                console.log("ValStep >>> " + ValStep.quitInstruction);
+            this.valStepInput += ValStep.QUIT_INSTRUCTION;
+            if (options?.verbose) {
+                console.log("ValStep >>> " + ValStep.QUIT_INSTRUCTION);
             }
-            child.stdin?.write(ValStep.quitInstruction);
+            child.stdin?.write(ValStep.QUIT_INSTRUCTION);
         });
     }
 
@@ -213,13 +260,31 @@ export class ValStep extends EventEmitter {
         return problemInfo.getInits();
     }
 
-    async executeIncrementally(valStepPath: string, cwd: string, happenings: Happening[]): Promise<TimedVariableValue[]> {
+    private async startValStep(options?: ValStepOptions): Promise<process.ChildProcess> {
+        if (this.childProcess) {
+            throw new Error(`This ValStep instance was already used. Create new one`);
+        }
         const args = await this.createValStepArgs();
-        const child = process.execFile(valStepPath, args, { cwd: cwd });
+        this.logValStepCommand(options, args);
+        return this.childProcess = process.execFile(options?.valStepPath ?? this.VALSTEP_EXE, args, options);
+    }
+
+    /**
+     * Executes series of plan happenings, while waiting for each burst of happenings (scheduled at the same time) to evaluate effects.
+     * @param happenings plan happenings to play
+     * @param options ValStep execution options
+     * @returns final variable values
+     */
+    async executeIncrementally(happenings: Happening[], options?: ValStepOptions): Promise<TimedVariableValue[]> {
+        if (this.childProcess) {
+            throw new Error(`This ValStep instance was already used. Create new one`);
+        }
+
+        const child = await this.startValStep(options);
 
         // subscribe to the child process standard output stream and concatenate it till it is complete
         child.stdout?.on('data', output => {
-            if (this.verbose) { console.log("ValStep <<<" + output); }
+            if (options?.verbose) { console.log("ValStep <<<" + output); }
             this.outputBuffer += output;
             if (this.isOutputComplete(this.outputBuffer)) {
                 const variableValues = this.parseEffects(this.outputBuffer);
@@ -237,7 +302,7 @@ export class ValStep extends EventEmitter {
         for (const time of groupedHappenings.keys()) {
             const happeningGroup = groupedHappenings.get(time);
             if (happeningGroup) {
-                await this.postHappeningsInteractively(child, happeningGroup);
+                await this.postHappenings(happeningGroup, options);
             } else {
                 console.warn(`Could not find happening group for time ${time}.`);
             }
@@ -250,14 +315,30 @@ export class ValStep extends EventEmitter {
 
     private async createValStepArgs(): Promise<string[]> {
         // copy editor content to temp files to avoid using out-of-date content on disk
-        const domainFilePath = await utils.Util.toPddlFile('domain', this.domainInfo.getText());
-        const problemFilePath = await utils.Util.toPddlFile('problem', this.problemInfo.getText()); // todo: this is where we are sending un-pre-processed problem text when rendering plan
+        try {
+            const domainFilePath = await utils.Util.toPddlFile('domain', this.domainInfo.getText());
+            const problemFilePath = await utils.Util.toPddlFile('problem', this.problemInfo.getText()); // todo: this is where we are sending un-pre-processed problem text when rendering plan
 
-        const args = [domainFilePath, problemFilePath];
-        return args;
+            const args = [domainFilePath, problemFilePath];
+            return args;
+        }
+        catch (err) {
+            console.log(err);
+            throw err;
+        }
     }
 
-    private async postHappeningsInteractively(childProcess: process.ChildProcess, happenings: Happening[]): Promise<boolean> {
+    /**
+     * Posts happening interactively.
+     * @param happenings happenings group (typically sharing the same timestamp)
+     * @param options execution options
+     */
+    async postHappenings(happenings: Happening[], options?: ValStepInteractiveOptions): Promise<boolean> {
+        if (!this.childProcess) {
+            this.childProcess = await this.startValStep(options);
+        }
+        const childProcess = this.childProcess;
+
         const valSteps = this.happeningsConvertor.convert(happenings);
         this.valStepInput += valSteps;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -273,7 +354,7 @@ export class ValStep extends EventEmitter {
                     reject(`ValStep did not respond to happenings @ ${lastHappeningTime1}`);
                     return;
                 },
-                500, lastHappeningTime);
+                options?.timeout ?? 500, lastHappeningTime);
 
             // subscribe to the valstep child process updates
             that.once(ValStep.HAPPENING_EFFECTS_EVALUATED, (effectValues: VariableValue[]) => {
@@ -289,16 +370,16 @@ export class ValStep extends EventEmitter {
                 if (!childProcess.stdin?.write(valSteps)) {
                     reject('Cannot post happenings to valstep');
                 }
-                if (this.verbose) { console.log("ValStep >>>" + valSteps); }
+                if (options?.verbose) { console.log("ValStep >>>" + valSteps); }
             }
             catch (err) {
-                if (this.verbose) { console.log("ValStep intput causing error: " + valSteps); }
+                if (options?.verbose) { console.log("ValStep intput causing error: " + valSteps); }
                 reject('Cannot post happenings to valstep: ' + err);
             }
         });
     }
 
-    applyIfNew(time: number, value: VariableValue): boolean {
+    private applyIfNew(time: number, value: VariableValue): boolean {
         const currentValue = this.variableValues.find(v => v.getVariableName().toLowerCase() === value.getVariableName().toLowerCase());
         if (currentValue === undefined) {
             this.variableValues.push(TimedVariableValue.from(time, value));
@@ -315,20 +396,20 @@ export class ValStep extends EventEmitter {
         }
     }
 
-    throwValStepExitCode(code: number | null, signal: string | null): void {
+    private throwValStepExitCode(code: number | null, signal: string | null): void {
         if (code !== null && code !== 0) {
             throw new ValStepExitCode(`ValStep exit code ${code} and signal ${signal}`);
         }
     }
 
-    throwValStepError(err: Error): void {
+    private throwValStepError(err: Error): void {
         throw new ValStepError(`ValStep failed with error ${err.name} and message ${err.message}`, this.domainInfo, this.problemInfo, this.valStepInput);
     }
 
-    valStepOutputPattern = /^(?:(?:\? )?Posted action \d+\s+)*(?:\? )+Seeing (\d+) changed lits\s*([\s\S]*)\s+\?\s*$/m;
-    valStepLiteralsPattern = /([\w-]+(?: [\w-]+)*) - now (true|false|[+-]?\d+\.?\d*(?:e[+-]?\d+)?)/g;
+    private readonly valStepOutputPattern = /^(?:(?:\? )?Posted action \d+\s+)*(?:\? )+Seeing (\d+) changed lits\s*([\s\S]*)\s+\?\s*$/m;
+    private readonly valStepLiteralsPattern = /([\w-]+(?: [\w-]+)*) - now (true|false|[+-]?\d+\.?\d*(?:e[+-]?\d+)?)/g;
 
-    isOutputComplete(output: string): boolean {
+    private isOutputComplete(output: string): boolean {
         this.valStepOutputPattern.lastIndex = 0;
         const match = this.valStepOutputPattern.exec(output);
         if (match && match[2]) {
@@ -347,7 +428,7 @@ export class ValStep extends EventEmitter {
         }
     }
 
-    parseEffects(happeningsEffectText: string): VariableValue[] {
+    private parseEffects(happeningsEffectText: string): VariableValue[] {
         const effectValues: VariableValue[] = [];
 
         this.valStepOutputPattern.lastIndex = 0;

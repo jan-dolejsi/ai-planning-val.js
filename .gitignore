@@ -4,3 +4,6 @@ out/
 
 # npm
 *-*.tgz
+
+# val downloaded for testing
+val/
