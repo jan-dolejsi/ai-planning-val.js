@@ -9,7 +9,7 @@ import { DomainInfo } from 'pddl-workspace';
 import { ValStep } from './ValStep';
 
 /**
- * Evaluates plan in the context of domain and problem and returns time-series data set.
+ * Evaluates plan in the context of domain and problem and returns the final state.
  */
 export class PlanEvaluator {
 

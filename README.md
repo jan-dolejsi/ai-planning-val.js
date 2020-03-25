@@ -7,7 +7,10 @@ Javascript/typescript wrapper for VAL (plan validation tools from [KCL Planning 
 
 ## VAL Download
 
-This package includes utility to download the VAL binaries.
+This package includes utility to download the VAL binaries. Select the build number, destination folder
+and the binaries for linux/windows/macos will get downloaded automatically.
+The 4 commonly used executables are `chmod +x`. If you use other utilities than `Parser`, `Validate`, `ValStep` or `ValueSeq`,
+please adjust the chmod yourself.
 
 If you install this package globally using `npm install ai-panning-val --global`, you can use this command from anywhere:
 
@@ -151,3 +154,15 @@ const valuesAtEnd = await valStep.executeIncrementally(allHappenings, {
     valStepPath: valManifest.valStep ?? 'ValStep'
 });
 ```
+
+## `PlanEvaluator` class
+
+Evaluates the final state of the provided plan.
+
+## `GroundedFunctionValues` class
+
+Evaluates numeric function values as they change in the course of the plan.
+
+## `HappeningsToValStep` utility
+
+Converts the `Happening` objects to input to the `ValStep` executable.
