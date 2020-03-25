@@ -15,11 +15,11 @@ const expectedBuildId = 37;
 export const VAL_DIRECTORY = `build${expectedBuildId}`;
 export const VAL_MANIFEST = path.join(VAL_DIRECTORY, 'val.json');
 
-describe.skip("ValDownloader", () => {
+describe("ValDownloader", () => {
 
     describe("#download()", () => {
 
-        it("downloads build", async () => {
+        it.skip("downloads build", async () => {
             utils.afs.mkdirIfDoesNotExist(VAL_DIRECTORY, 0x755);
             const downloadedVersion = await new ValDownloader().download(expectedBuildId, VAL_DIRECTORY);
             expect(downloadedVersion).to.not.be.undefined;
@@ -36,8 +36,8 @@ describe.skip("ValDownloader", () => {
                 await assertExists(VAL_DIRECTORY, downloadedVersion?.valueSeqPath, "ValueSeq");
             }
 
-            console.log(downloadedVersion?.files);
+            console.log(`Downloaded: ${downloadedVersion?.files.length}`);
             expect(downloadedVersion?.buildId).to.be.equal(expectedBuildId);
-        }).timeout(60 * 1000);
+        }).timeout(10 * 1000);
     });
 });

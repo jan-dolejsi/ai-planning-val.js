@@ -112,7 +112,11 @@ export class ValStep extends EventEmitter {
             const child = that.childProcess = process.spawn(options?.valStepPath ?? this.VALSTEP_EXE, args, options);
 
             let outputtingProblem = false;
-
+            if (!child.stdout) {
+                reject(new Error(`ValStep child process has no 'stdout'`));
+                console.log(child.kill() ? "ValStep killed" : "ValStep not killed yet.");
+                return;
+            }
             child.stdout.on('data', output => {
                 const outputString = output.toString("utf8");
                 if (options?.verbose) { console.log("ValStep <<<" + outputString); }
