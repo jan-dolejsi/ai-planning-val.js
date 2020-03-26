@@ -1,6 +1,6 @@
 {
   "name": "ai-planning-val",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Javascript/typescript wrapper for VAL (plan validation tools from KCL Planning department).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,6 +25,10 @@
   ],
   "author": "Jan Dolejsi",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jan-dolejsi/ai-planning-val.js"
+  },
   "devDependencies": {
     "typescript": "^3.8.3",
     "@types/node": "^13.9.1",
@@ -46,7 +50,7 @@
   "dependencies": {
     "adm-zip": "^0.4.14",
     "events": "^3.1.0",
-    "pddl-workspace": "^1.1.0",
+    "pddl-workspace": "^1.2.1",
     "request": "^2.88.2",
     "yargs": "^15.3.1"
   }

@@ -12,6 +12,7 @@ Javascript/typescript wrapper for VAL (plan validation tools from [KCL Planning 
     - [Batch evaluation with notification events fired for each intermediate state](#batch-evaluation-with-notification-events-fired-for-each-intermediate-state)
     - [Interactive plan execution](#interactive-plan-execution)
   - [`PlanEvaluator` class](#planevaluator-class)
+  - [`ValueSeq` class](#valueseq-class)
   - [`PlanFunctionEvaluator` class](#planfunctionevaluator-class)
   - [`HappeningsToValStep` utility](#happeningstovalstep-utility)
 
@@ -220,9 +221,68 @@ regardless what was the state at which those values were actually created.
 > Only state values that were modified in the course of the plan,
 > or were initialized in the original problem file are exported.
 
+## `ValueSeq` class
+
+Evaluates numeric function values as they change in the course of the plan.
+
+```typescript
+const valueSeq = new ValueSeq(domainPath, problemPath, planPath, {
+    valueSeqPath: valueSeqPath,
+    adjustDuplicateTimeStamp: true,
+    verbose: true
+});
+
+const f = domain.getFunction('f'); // for more details, see ValueSeqTest.ts
+if (!f) { fail(`'f' not found in domain`); }
+const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
+
+const values = await valueSeq.evaluate(f, [fO1]);
+
+console.log(values.toCsv());
+```
+
+This prints the following comma-separated values:
+
+|               | f ?t - t1 |
+| ------------- | --------- |
+| time          | o1        |
+| 0             | 0         |
+| 0.001         | 0         |
+| 0.0010000001  | 10        |
+| 10.001        | 20        |
+| 10.0010000001 | 30        |
+
+The `adjustDuplicateTimestamps` switch adds a `1e-10` delta to every duplicate timestamp,
+so charting libraries can naturally plot the line as a step function.
+
+> Known issue: Currently if multiple grounded functions are passed to `ValueSeq#evaluate(liftedFunction, groundedFunctions)` method,
+> the `adjustDuplicatedTimeStamps=false` flag gets ignored in order to preserve
+> duplicate timestamps.
+
 ## `PlanFunctionEvaluator` class
 
 Evaluates numeric function values as they change in the course of the plan.
+
+```typescript
+const planObj = new Plan(plan.getSteps(), domain, problem);
+const planEvaluator = new PlanFunctionEvaluator(planObj, {
+    valueSeqPath: valueSeqPath, valStepPath: valStepPath, shouldGroupByLifted: true
+});
+
+const functionValues = await planEvaluator.evaluate();
+
+// print out the data for each graph
+[...functionValues.values()].forEach(variableValues => {
+    console.log(variableValues.toCsv());
+});
+```
+
+The above code sample prints csv table for each lifted function with one column
+per grounded function. In other words, it outputs the same structure as `ValueSeq` above,
+but for every lifted function.
+
+> Known issue: the `options: { adjustDuplicatedTimeStamps=false }` flag gets ignored
+> if the PDDL problem has multiple grounded functions in order to preserve the duplicate timestamps (for step function charts).
 
 ## `HappeningsToValStep` utility
 

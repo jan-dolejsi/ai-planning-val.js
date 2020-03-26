@@ -5,13 +5,12 @@
 
 import * as process from 'child_process';
 import { EventEmitter } from 'events';
-
-import { utils } from 'pddl-workspace';
 import * as path from 'path';
-import { parser } from 'pddl-workspace';
-import { ProblemInfo, TimedVariableValue, VariableValue } from 'pddl-workspace';
-import { DomainInfo } from 'pddl-workspace';
-import { Happening } from 'pddl-workspace';
+
+import {
+    utils, parser, ProblemInfo, TimedVariableValue, VariableValue,
+    DomainInfo, Happening
+} from 'pddl-workspace';
 
 import { HappeningsToValStep } from './HappeningsToValStep';
 
@@ -103,7 +102,7 @@ export class ValStep extends EventEmitter {
         }
 
         let args = await this.createValStepArgs();
-        const valStepsPath = await utils.Util.toPddlFile('valSteps', this.valStepInput);
+        const valStepsPath = await utils.Util.toFile('valSteps', '.valsteps', this.valStepInput);
         args = ['-i', valStepsPath, ...args];
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias

@@ -2,7 +2,7 @@
 
 (define (domain domain1)
 
-(:requirements :strips  :fluents :durative-actions)
+(:requirements :strips  :fluents :durative-actions :typing)
 
 (:types 
     t1
@@ -14,7 +14,7 @@
 )
 
 (:functions
-    (f ?t - t1)
+    (f ?t - t1); description ... [unit1]
 )
 
 (:durative-action action1
