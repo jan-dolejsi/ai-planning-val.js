@@ -76,19 +76,18 @@ export class ValueSeq {
 
         const functions = groundedFunctions
             .map(f => f.getFullName())
-            .map(name => name.toLowerCase())
-            .map(a => a.includes(' ') ? `"${a}"` : a);
+            .map(name => name.toLowerCase());
 
         const valueSeqCommand = this.options?.valueSeqPath ?? 'ValueSeq';
 
-        const valueSeqArgs = ["-T", this.domainFile, this.problemFile, this.planFile, ...functions];
+        const valueSeqArgs = ["-T", this.domainFile, this.problemFile, this.planFile].concat(functions);
 
         if (this.options?.verbose) {
-            console.log(valueSeqCommand + ' ' + valueSeqArgs.join(' '));
+            console.log(valueSeqCommand + ' ' + valueSeqArgs.map(a => a.includes(' ') ? `"${a}"` : a));
         }
 
         const csv = await new Promise<string>((resolve, reject) => {
-            process.execFile(valueSeqCommand, valueSeqArgs, { encoding: 'utf8',  windowsVerbatimArguments: true },
+            process.execFile(valueSeqCommand, valueSeqArgs, { encoding: 'utf8' },
                 (error, stdout, stderr) => {
 
                     if (error) {
