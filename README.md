@@ -186,9 +186,9 @@ Let's consider this temporal and numeric PDDL [domain](test/samples/temporal-num
 ```typescript
 const plan = parser.PddlPlanParser.parseText(planText, 0.001, 'test/samples/temporal-numeric/problem.plan');
 
-const planEvaluator = new PlanEvaluator(() => './val-binaries/..../ValStep);
-
-const finalState = await planEvaluator.evaluate(domain, problem, plan);
+const planEvaluator = new PlanEvaluator();
+const valStepPath = './val-binaries/..../ValStep';
+const finalState = await planEvaluator.evaluate(domain, problem, plan, { valStepPath: valStepPath });
 console.log(JSON.stringify(finalState, null, 2));
 ```
 

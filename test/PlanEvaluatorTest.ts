@@ -14,7 +14,7 @@ describe('PlanEvaluator', () => {
     let problem: ProblemInfo;
     let plan: PlanInfo;
     let valStepPath: string;
-    
+
     before(async () => {
         const domainText = fs.readFileSync(DOMAIN_PATH, { encoding: 'utf8', flag: 'r' });
         const parsedDomain = parser.PddlDomainParser.parseText(domainText);
@@ -40,14 +40,14 @@ describe('PlanEvaluator', () => {
     });
 
     describe("#evaluate()", () => {
-        it('evaluates simple temporal numeric plan', async() => {
+        it('evaluates simple temporal numeric plan', async () => {
             // GIVEN
-            const planEvaluator = new PlanEvaluator(() => valStepPath);
+            const planEvaluator = new PlanEvaluator();
 
             // WHEN
-            const finalState = await planEvaluator.evaluate(domain, problem, plan);
+            const finalState = await planEvaluator.evaluate(domain, problem, plan, { valStepPath: valStepPath });
             console.log(JSON.stringify(finalState, null, 2));
-            
+
             // THEN
             expect(finalState, "should have N variables").to.have.lengthOf(3);
             {

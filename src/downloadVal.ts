@@ -8,6 +8,11 @@ import { ValDownloader, writeValManifest } from './ValDownloader';
 import yargs from 'yargs';
 import path from 'path';
 
+/** 
+ * This script wraps the `ValDownloader` into a Node.js command-line utility. 
+ * This is CLI is used by the CI workflow!
+ */
+
 const argv = yargs.option('buildId', {
     description: 'VAL Build ID (see ID of the latest from https://dev.azure.com/schlumberger/ai-planning-validation/_build/latest?definitionId=2&branchName=master)',
     default: 37,
