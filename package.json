@@ -1,6 +1,6 @@
 {
   "name": "ai-planning-val",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Javascript/typescript wrapper for VAL (plan validation tools from KCL Planning department).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -50,7 +50,7 @@
   "dependencies": {
     "adm-zip": "^0.4.14",
     "events": "^3.1.0",
-    "pddl-workspace": "^1.2.1",
+    "pddl-workspace": "^2.0.0",
     "request": "^2.88.2",
     "yargs": "^15.3.1"
   }
