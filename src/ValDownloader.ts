@@ -25,7 +25,9 @@ export class UnsupportedOperatingSystem implements Error {
 
 export class ValDownloader {
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    static readonly VAL_BINARY_PROJECT = "https://dev.azure.com/schlumberger/ai-planning-validation";
+    static readonly VAL_REPO = `https://github.com/KCL-Planning/VAL`;
+
     protected async downloadDelegate(url: string, zipPath: string, message: string): Promise<void> {
         console.log(message);
         return getFile(url, zipPath);
@@ -42,11 +44,11 @@ export class ValDownloader {
         if (!artifactName) {
             throw this.unsupportedOperatingSystem();
         }
-
-        await utils.afs.mkdirIfDoesNotExist(destinationDirectory, 0o755);
+		// todo: does this create all the directories?
+        utils.afs.mkdirIfDoesNotExist(destinationDirectory, 0o755);
 
         const zipPath = path.join(destinationDirectory, "drop.zip");
-        await utils.afs.mkdirIfDoesNotExist(path.dirname(zipPath), 0o755);
+        utils.afs.mkdirIfDoesNotExist(path.dirname(zipPath), 0o755);
 
         const url = `https://dev.azure.com/schlumberger/4e6bcb11-cd68-40fe-98a2-e3777bfec0a6/_apis/build/builds/${buildId}/artifacts?artifactName=${artifactName}&api-version=5.2-preview.5&%24format=zip`;
 
@@ -76,7 +78,7 @@ export class ValDownloader {
         console.log(`Val binaries unzipped to directory: ${path.join(process.cwd(), destinationDirectory)}`);
 
         // clean-up and delete the drop content
-        await this.deleteAll(dropEntries.map(file => path.join(destinationDirectory, file)));
+        await ValDownloader.deleteAll(dropEntries.map(file => path.join(destinationDirectory, file)));
 
         // delete the drop zip
         await utils.afs.unlink(zipPath);
@@ -103,7 +105,7 @@ export class ValDownloader {
         }
     }
 
-    async unzip(zipPath: string, destinationDirectory: string): Promise<string[]> {
+    private async unzip(zipPath: string, destinationDirectory: string): Promise<string[]> {
         const zip = new AdmZip(zipPath);
         const entryNames = zip.getEntries()
             .filter(entry => !entry.isDirectory)
@@ -122,7 +124,7 @@ export class ValDownloader {
         });
     }
 
-    private async deleteAll(files: string[]): Promise<void> {
+    static async deleteAll(files: string[]): Promise<void> {
         // 1. delete downloaded files
         const deletionPromises = files
             .filter(file => fs.existsSync(file))
@@ -136,13 +138,13 @@ export class ValDownloader {
             .sort((a, b) => b.length - a.length);
 
         for (const directory of emptyDirectories) {
-            if (await utils.afs.isEmpty(directory)) {
+            if (await utils.afs.exists(directory) && await utils.afs.isEmpty(directory)) {
                 await utils.afs.rmdir(directory);
             }
         }
     }
 
-    static getBuildArtifactName(): string | null {
+    private static getBuildArtifactName(): string | null {
         switch (os.platform()) {
             case "win32":
                 switch (os.arch()) {
@@ -172,7 +174,7 @@ export class ValDownloader {
         }
     }
 
-    allowExecution(targetDirectory: string, manifest: ValVersion): void {
+    private allowExecution(targetDirectory: string, manifest: ValVersion): void {
         const executePermission = fs.constants.S_IXUSR | fs.constants.S_IRGRP;
         [manifest.parserPath, manifest.valStepPath, manifest.validatePath, manifest.valueSeqPath]
             .filter(tool => !!tool)
