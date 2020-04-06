@@ -38,7 +38,7 @@ export class ValDownloader {
      * @param buildId VAL build ID to download artifacts from
      * @param destinationDirectory Directory where VAL binaries are to be downloaded locally.
      */
-    async download(buildId: number, destinationDirectory: string): Promise<ValVersion | undefined> {
+    async download(buildId: number, destinationDirectory: string): Promise<ValVersion> {
 
         const artifactName = ValDownloader.getBuildArtifactName();
         if (!artifactName) {
