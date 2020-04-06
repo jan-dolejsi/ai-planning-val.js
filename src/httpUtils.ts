@@ -41,7 +41,10 @@ export function getFile(url: string, localFilePath: string): Promise<void> {
                 reject(err);
             })
             .pipe(localFile)
-            .on("close", () => resolve());
+            .on("close", () => {
+                resolve();
+                localFile.close();
+            });
     });
 }
 
