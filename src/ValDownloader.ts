@@ -182,7 +182,7 @@ export class ValDownloader {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             .map(tool => tool!)
             .forEach(tool => {
-                fs.chmodSync(path.join('.', targetDirectory, tool), executePermission)
+                fs.chmodSync(path.join(targetDirectory, tool), executePermission)
             });
     }
 
@@ -231,7 +231,7 @@ export async function readValManifest(manifestPath: string): Promise<ValVersion>
 export async function writeValManifest(manifestPath: string, valVersion: ValVersion): Promise<void> {
     const json = JSON.stringify(valVersion, null, 2);
     try {
-        await utils.afs.writeFile(manifestPath, json, 'utf8');
+        await utils.afs.writeFile(manifestPath, json, { encoding: 'utf8' });
     }
     catch (err) {
         throw new Error(`Error saving VAL manifest ${err.name}: ${err.message}`);
