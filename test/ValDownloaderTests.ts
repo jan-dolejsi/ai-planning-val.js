@@ -15,26 +15,27 @@ async function assertExists(targetDirectory: string, relativePath?: string, tool
 const expectedBuildId = 37;
 const VAL_DIRECTORY = 'val';
 export const VAL_MANIFEST = path.join('.', VAL_DIRECTORY, 'val.json');
+const VAL_DIRECTORY_ABS = path.resolve(__dirname, '..', '..', VAL_DIRECTORY);
 
 describe("ValDownloader", () => {
 
     describe("#download()", () => {
 
         it.skip("downloads build", async () => {
-            utils.afs.mkdirIfDoesNotExist(VAL_DIRECTORY, 0x755);
-            const downloadedVersion = await new ValDownloader().download(expectedBuildId, VAL_DIRECTORY);
+            utils.afs.mkdirIfDoesNotExist(VAL_DIRECTORY_ABS, 0x755);
+            const downloadedVersion = await new ValDownloader().download(expectedBuildId, VAL_DIRECTORY_ABS);
             expect(downloadedVersion).to.not.be.undefined;
 
             if (downloadedVersion) {
                 writeValManifest(VAL_MANIFEST, downloadedVersion);
                 for (let i = 0; i < downloadedVersion.files.length; i++) {
-                    await assertExists(VAL_DIRECTORY, downloadedVersion.files[i]);
+                    await assertExists(VAL_DIRECTORY_ABS, downloadedVersion.files[i]);
                 }
 
-                await assertExists(VAL_DIRECTORY, downloadedVersion?.parserPath, "Parser");
-                await assertExists(VAL_DIRECTORY, downloadedVersion?.valStepPath, "ValStep");
-                await assertExists(VAL_DIRECTORY, downloadedVersion?.validatePath, "Validate");
-                await assertExists(VAL_DIRECTORY, downloadedVersion?.valueSeqPath, "ValueSeq");
+                await assertExists(VAL_DIRECTORY_ABS, downloadedVersion?.parserPath, "Parser");
+                await assertExists(VAL_DIRECTORY_ABS, downloadedVersion?.valStepPath, "ValStep");
+                await assertExists(VAL_DIRECTORY_ABS, downloadedVersion?.validatePath, "Validate");
+                await assertExists(VAL_DIRECTORY_ABS, downloadedVersion?.valueSeqPath, "ValueSeq");
             }
 
             console.log(`Downloaded: ${downloadedVersion?.files.length}`);
@@ -45,7 +46,7 @@ describe("ValDownloader", () => {
             const manifest = await readValManifest(VAL_MANIFEST);
             expect(manifest.valStepPath, "valstep should be present").to.not.be.undefined;
             if (manifest.valStepPath) {
-                fs.accessSync(path.join('.', VAL_DIRECTORY, manifest.valStepPath), fs.constants.X_OK);
+                fs.accessSync(path.join(VAL_DIRECTORY_ABS, manifest.valStepPath), fs.constants.X_OK);
             }
         });
     });
