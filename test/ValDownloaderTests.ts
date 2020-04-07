@@ -22,7 +22,7 @@ describe("ValDownloader", () => {
     describe("#download()", () => {
 
         it.skip("downloads build", async () => {
-            utils.afs.mkdirIfDoesNotExist(VAL_DIRECTORY_ABS, 0x755);
+            await utils.afs.mkdirIfDoesNotExist(VAL_DIRECTORY_ABS, 0x755);
             const downloadedVersion = await new ValDownloader().download(expectedBuildId, VAL_DIRECTORY_ABS);
             expect(downloadedVersion).to.not.be.undefined;
 

@@ -490,7 +490,7 @@ export class ValStep extends EventEmitter {
         const targetDir = targetDirectoryFsPath;
         const caseDir = 'valstep-' + new Date().toISOString().split(':').join('-');
         const casePath = path.join(targetDir, caseDir);
-        utils.afs.mkdirIfDoesNotExist(casePath, 0o644);
+        await utils.afs.mkdirIfDoesNotExist(casePath, 0o644);
 
         const domainFile = "domain.pddl";
         const problemFile = "problem.pddl";

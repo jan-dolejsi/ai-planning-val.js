@@ -44,11 +44,10 @@ export class ValDownloader {
         if (!artifactName) {
             throw this.unsupportedOperatingSystem();
         }
-        // todo: does this create all the directories?
-        utils.afs.mkdirIfDoesNotExist(destinationDirectory, 0o755);
+        await utils.afs.mkdirIfDoesNotExist(destinationDirectory, { mode: 0o755, recursive: true });
 
         const zipPath = path.join(destinationDirectory, "drop.zip");
-        utils.afs.mkdirIfDoesNotExist(path.dirname(zipPath), 0o755);
+        await utils.afs.mkdirIfDoesNotExist(path.dirname(zipPath), 0o755);
 
         const url = `https://dev.azure.com/schlumberger/4e6bcb11-cd68-40fe-98a2-e3777bfec0a6/_apis/build/builds/${buildId}/artifacts?artifactName=${artifactName}&api-version=5.2-preview.5&%24format=zip`;
 
