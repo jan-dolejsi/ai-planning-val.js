@@ -12,13 +12,13 @@ import AdmZip from 'adm-zip';
 import { getFile } from './httpUtils';
 
 export class UnsupportedOperatingSystem implements Error {
-    constructor(public readonly supportedOperatingSystems: string[], public readonly yourOperatingSystem: string) {
+    constructor(public readonly supportedOperatingSystems: string[], public readonly yourOperatingSystem: string, public readonly yourCpuArchitecture: string) {
     }
     get name(): string {
         return "UnsupportedOperatingSystem";
     }
     get message(): string {
-        return `Binaries for operating system ${this.yourOperatingSystem} are not available. Supported: ${this.supportedOperatingSystems.join(', ')}`;
+        return `Binaries for operating system ${this.yourOperatingSystem} ${this.yourCpuArchitecture} are not available. Supported: ${this.supportedOperatingSystems.join(', ')}`;
     }
     stack?: string | undefined;
 }
@@ -44,7 +44,7 @@ export class ValDownloader {
         if (!artifactName) {
             throw this.unsupportedOperatingSystem();
         }
-		// todo: does this create all the directories?
+        // todo: does this create all the directories?
         utils.afs.mkdirIfDoesNotExist(destinationDirectory, 0o755);
 
         const zipPath = path.join(destinationDirectory, "drop.zip");
@@ -151,6 +151,7 @@ export class ValDownloader {
                     case "x64":
                         return "win64";
                     case "x32":
+                    case "ia32":
                         return "win32";
                     default:
                         return null;
@@ -186,7 +187,7 @@ export class ValDownloader {
     }
 
     private unsupportedOperatingSystem(): UnsupportedOperatingSystem {
-        return new UnsupportedOperatingSystem(["win32", "linux", "darwin"], os.platform());
+        return new UnsupportedOperatingSystem(["win32 (arch: x64, x32, ia32)", "linux (arch: x64)", "darwin (x64)"], os.platform(), os.arch());
     }
 }
 
