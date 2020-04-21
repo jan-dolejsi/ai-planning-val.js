@@ -13,7 +13,7 @@ import { ValStep, ValStepOptions } from './ValStep';
  */
 export class PlanEvaluator {
 
-    async evaluate(domainInfo: DomainInfo, problemInfo: ProblemInfo, planInfo: PlanInfo, options: ValStepOptions): Promise<TimedVariableValue[]> {
+    async evaluate(domainInfo: DomainInfo, problemInfo: ProblemInfo, planInfo: PlanInfo, options: ValStepOptions): Promise<TimedVariableValue[] | undefined> {
         // todo: run semantic validation for the plan first
 
         const happenings = planInfo.getHappenings();

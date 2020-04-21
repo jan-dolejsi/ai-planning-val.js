@@ -90,9 +90,9 @@ export class ValStep extends EventEmitter {
      * Executes series of plan happenings in one batch without waiting for incremental effect evaluation.
      * @param happenings plan happenings to play
      * @param options ValStep execution options
-     * @returns final variable values, or null in case the tool fails
+     * @returns final variable values, or undefined in case the ValStep fails
      */
-    async executeBatch(happenings: Happening[], options?: ValStepOptions): Promise<TimedVariableValue[]> {
+    async executeBatch(happenings: Happening[], options?: ValStepOptions): Promise<TimedVariableValue[] | undefined> {
         if (this.childProcess) {
             throw new Error(`This ValStep instance was already used. Create new one`);
         }

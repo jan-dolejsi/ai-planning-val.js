@@ -4,6 +4,7 @@ import fs from 'fs';
 import { PlanEvaluator } from './src';
 import { parser, DomainInfo, ProblemInfo, PlanInfo } from 'pddl-workspace';
 import * as testUtils from './testUtils';
+import { fail } from 'assert';
 
 const DOMAIN_PATH = 'test/samples/temporal-numeric/domain.pddl';
 const PROBLEM_PATH = 'test/samples/temporal-numeric/problem.pddl';
@@ -49,6 +50,8 @@ describe('PlanEvaluator', () => {
             console.log(JSON.stringify(finalState, null, 2));
 
             // THEN
+            expect(finalState).to.not.be.undefined;
+            if (!finalState) { fail(); }
             expect(finalState, "should have N variables").to.have.lengthOf(3);
             {
                 const qO1 = finalState.find(v => v.getVariableName() === 'q o1');

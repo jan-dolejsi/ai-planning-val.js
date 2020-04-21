@@ -111,7 +111,7 @@ export class PlanFunctionEvaluator {
         const finalStateValues = await new ValStep(this.domain, this.problem)
             .executeBatch(happenings, this.options);
 
-        if (finalStateValues === null) { return []; } // cannot happen
+        if (!finalStateValues) { return []; } // ValStep failed
 
         return finalStateValues
             .map(value => this.getFunction(value.getVariableName()))
