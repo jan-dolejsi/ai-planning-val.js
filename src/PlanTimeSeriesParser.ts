@@ -72,7 +72,7 @@ export class FunctionsValues {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
         return this.functions.every((_, idx) => {
-            const firstValue = that.values[0][idx + 1];
+            const firstValue = that.values[0] && that.values[0][idx + 1];
             return that.values.every(values1 => values1[idx + 1] === firstValue);
         });
     }

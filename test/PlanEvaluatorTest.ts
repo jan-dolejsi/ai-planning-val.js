@@ -5,6 +5,7 @@ import { PlanEvaluator } from './src';
 import { parser, DomainInfo, ProblemInfo, PlanInfo } from 'pddl-workspace';
 import * as testUtils from './testUtils';
 import { fail } from 'assert';
+import { URI } from 'vscode-uri';
 
 const DOMAIN_PATH = 'test/samples/temporal-numeric/domain.pddl';
 const PROBLEM_PATH = 'test/samples/temporal-numeric/problem.pddl';
@@ -34,7 +35,7 @@ describe('PlanEvaluator', () => {
         problem = parsedProblem;
 
         const planText = fs.readFileSync(PLAN_PATH, { encoding: 'utf8', flag: 'r' });
-        plan = parser.PddlPlanParser.parseText(planText, 0.001, PLAN_PATH);
+        plan = parser.PddlPlanParser.parseText(planText, 0.001, URI.file(PLAN_PATH));
         console.log(JSON.stringify(plan.getSteps(), null, 2));
 
         valStepPath = testUtils.getValToolPath(await testUtils.getDownloadedManifest(), manifest => manifest.valStepPath);

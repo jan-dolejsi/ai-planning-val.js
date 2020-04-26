@@ -2,6 +2,7 @@ import { expect } from 'chai';
 
 import fs from 'fs';
 import os from 'os';
+import { URI } from 'vscode-uri';
 import { PlanFunctionEvaluator } from './src';
 import { parser, DomainInfo, ProblemInfo, PlanInfo, Plan } from 'pddl-workspace';
 import * as testUtils from './testUtils';
@@ -41,7 +42,7 @@ describe('PlanFunctionEvaluator', () => {
         problem = parsedProblem;
 
         const planText = fs.readFileSync(PLAN_PATH, { encoding: 'utf8', flag: 'r' });
-        plan = parser.PddlPlanParser.parseText(planText, 0.001, PLAN_PATH);
+        plan = parser.PddlPlanParser.parseText(planText, 0.001, URI.file(PLAN_PATH));
         console.log(JSON.stringify(plan.getSteps(), null, 2));
 
         valStepPath = testUtils.getValToolPath(await testUtils.getDownloadedManifest(), manifest => manifest.valStepPath);

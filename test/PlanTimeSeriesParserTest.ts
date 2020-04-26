@@ -6,6 +6,7 @@
 import { PlanTimeSeriesParser, FunctionValues, StateValues, FunctionsValues } from '../src/PlanTimeSeriesParser';
 import { Variable, ObjectInstance, Parameter } from 'pddl-workspace';
 import * as assert from 'assert';
+import { expect } from 'chai';
 
 describe('PlanTimeSeriesParser', () => {
 
@@ -30,6 +31,35 @@ describe('PlanTimeSeriesParser', () => {
             assert.equal(functionValues?.values.length, 2, "there should be 2 x/y points");
             const values = functionValues?.values;
             assert.deepEqual(values, [[0, 10], [1, 11]]);
+        });
+
+        it('parses one empty function', () => {
+            // GIVEN
+            const functionName = "function1 param1 param2";
+            const typeName = "type1";
+            const csvData = functionName + '\n';
+            const function1 = new Variable(functionName, [new ObjectInstance("param1", typeName), new ObjectInstance("param2", typeName)]);
+
+            // WHEN
+            const parser = new PlanTimeSeriesParser([function1], csvData);
+
+            // THEN
+            {
+                assert.ok(parser.getFunctionValues(function1), "there should be values for this function");
+                const functionValues = parser.getFunctionValues(function1);
+                expect(functionValues).to.not.be.undefined;
+                if (!functionValues) { assert.fail(); }
+                expect(functionValues.getLegend()).to.equal("param1 param2");
+                expect(functionValues.variable).to.deep.equal(function1);
+                expect(functionValues.values, "there should be 0 points").to.have.lengthOf(0);
+                const values = functionValues.values;
+                expect(values).to.have.lengthOf(0);
+            }
+            {
+                const functionsData = parser.getFunctionData(function1);
+                expect(functionsData).to.not.be.undefined;
+                expect(functionsData.isConstant()).to.equal(true);
+            }
         });
 
         it('parses two functions', () => {
@@ -64,6 +94,37 @@ describe('PlanTimeSeriesParser', () => {
             assert.equal(functionValues2?.variable, function2);
             const values2 = functionValues2?.values;
             assert.deepEqual(values2, [[0, 5], [1.5, 7]]);
+        });
+        
+        it('parses two empty functions', () => {
+            // GIVEN
+            const functionName1 = "function1";
+            const function1 = new Variable(functionName1, []);
+
+            const functionName2 = "function2";
+            const function2 = new Variable(functionName2, []);
+
+            const csvData = `${functionName1}
+            ${functionName2}
+            `;
+
+            // WHEN
+            const parser = new PlanTimeSeriesParser([function1, function2], csvData);
+
+            // THEN
+            assert.ok(parser.getFunctionValues(function1), "there should be values for this function1");
+            const functionValues1 = parser.getFunctionValues(function1);
+            assert.equal(functionValues1?.getLegend(), "");
+            assert.equal(functionValues1?.variable, function1);
+            const values1 = functionValues1?.values;
+            assert.deepEqual(values1, []);
+
+            assert.ok(parser.getFunctionValues(function2), "there should be values for this function2");
+            const functionValues2 = parser.getFunctionValues(function2);
+            assert.equal(functionValues2?.getLegend(), "");
+            assert.equal(functionValues2?.variable, function2);
+            const values2 = functionValues2?.values;
+            assert.deepEqual(values2, []);
         });
     });
 
