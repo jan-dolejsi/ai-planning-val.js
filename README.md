@@ -14,6 +14,7 @@ Javascript/typescript wrapper for VAL (plan validation tools from [KCL Planning 
   - [`PlanEvaluator` class](#planevaluator-class)
   - [`ValueSeq` class](#valueseq-class)
   - [`PlanFunctionEvaluator` class](#planfunctionevaluator-class)
+    - [Evaluating `NumericExpression`s to a time-series over plan happenings](#evaluating-numericexpressions-to-a-time-series-over-plan-happenings)
   - [`HappeningsToValStep` utility](#happeningstovalstep-utility)
 
 ## VAL Download
@@ -236,7 +237,18 @@ const f = domain.getFunction('f'); // for more details, see ValueSeqTest.ts
 if (!f) { fail(`'f' not found in domain`); }
 const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
 
-const values = await valueSeq.evaluate(f, [fO1]);
+const values = await valueSeq.evaluate([fO1]);
+
+const fO1Values = values.get(fO1.getFullName());
+
+const time0 = fO1Values?.getTimeAtIndex(0);
+const value0 = fO1Values?.getValueAtIndex(0);
+```
+
+Alternatively, one can request values for a group of grounded actions corresponding to one lifted:
+
+```typescript
+const values = await valueSeq.evaluateForLifted(f, [fO1]);
 
 console.log(values.toCsv());
 ```
@@ -255,7 +267,7 @@ This prints the following comma-separated values:
 The `adjustDuplicateTimestamps` switch adds a `1e-10` delta to every duplicate timestamp,
 so charting libraries can naturally plot the line as a step function.
 
-> Known issue: Currently if multiple grounded functions are passed to `ValueSeq#evaluate(liftedFunction, groundedFunctions)` method,
+> Known issue: Currently if multiple grounded functions are passed to `ValueSeq#evaluateForLifted(liftedFunction, groundedFunctions)` method,
 > the `adjustDuplicatedTimeStamps=false` flag gets ignored in order to preserve
 > duplicate timestamps.
 
@@ -283,6 +295,24 @@ but for every lifted function.
 
 > Known issue: the `options: { adjustDuplicatedTimeStamps=false }` flag gets ignored
 > if the PDDL problem has multiple grounded functions in order to preserve the duplicate timestamps (for step function charts).
+
+### Evaluating `NumericExpression`s to a time-series over plan happenings
+
+Suppose you have a [`NumericExpression`](https://github.com/jan-dolejsi/pddl-workspace#pddl-numeric-expression-parser)
+(i.e. a plan metric) and want to see it on a plot:
+
+```typescript
+const planObj = new Plan(plan.getSteps(), domain, problem);
+const planEvaluator = new PlanFunctionEvaluator(planObj, {
+    valueSeqPath: valueSeqPath, valStepPath: valStepPath, shouldGroupByLifted: false
+});
+
+const metric = problem.getMetrics()[0];
+
+const functionValues = await planEvaluator.evaluateExpression(metric.getExpression());
+
+functionValues.getValue(5); returns value correspnoding to time `5`
+```
 
 ## `HappeningsToValStep` utility
 

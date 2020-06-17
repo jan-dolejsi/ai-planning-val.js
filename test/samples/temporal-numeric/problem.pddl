@@ -11,4 +11,7 @@
 (:goal (and
     (p o1)
 ))
+    
+; Twice f for o1 [unit]
+(:metric minimize (* (f o1) 2))
 )

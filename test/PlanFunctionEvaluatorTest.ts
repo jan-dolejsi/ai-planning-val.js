@@ -79,4 +79,29 @@ describe('PlanFunctionEvaluator', () => {
             }
         });
     });
+
+    describe("#evaluateExpression(expression)", () => {
+        it('evaluates expression', async () => {        
+            // GIVEN
+            const planObj = new Plan(plan.getSteps(), domain, problem);
+            const planEvaluator = new PlanFunctionEvaluator(planObj, {
+                valueSeqPath: valueSeqPath, valStepPath: valStepPath, shouldGroupByLifted: false
+            });
+
+            const metric = problem.getMetrics()[0];
+
+            // WHEN
+            const functionValues = await planEvaluator.evaluateExpression(metric.getExpression());
+
+            // THEN
+            const eps = 1e-3;
+            const td = PlanTimeSeriesParser.TIME_DELTA;
+            const expectedChartValues = [[0, 0], [eps, 0], [eps + td, 2*10], [10 + eps, 2*20], [10 + eps + td, 2*30]];
+            expect(functionValues.values).to.deep.equal(expectedChartValues);
+            expect(functionValues.getValue(0)).to.be.closeTo(0, 1e-5);
+            expect(functionValues.getValue(2.5)).to.be.closeTo(25, 1e-2);
+            expect(functionValues.getValue(5)).to.be.closeTo(30-0.002, 1e-5);
+            expect(functionValues.getValue(7.5)).to.be.closeTo(35, 1e-2);
+        });
+    });
 });

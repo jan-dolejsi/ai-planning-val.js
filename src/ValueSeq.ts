@@ -7,7 +7,7 @@ import * as process from 'child_process';
 import * as os from 'os';
 
 import { Variable } from 'pddl-workspace';
-import { PlanTimeSeriesParser } from './PlanTimeSeriesParser';
+import { PlanTimeSeriesParser, FunctionValues } from './PlanTimeSeriesParser';
 
 export interface ValueSeqOptions {
     verbose?: boolean;
@@ -27,10 +27,10 @@ export class GroundedFunctionValues {
     public static readonly TIME_DELTA = 1e-10;
 
     constructor(public readonly liftedVariable: Variable, values: number[][], public readonly legend: string[]) {
-        this.values = values.map(row => row.map(v => this.undefinedToNull(v)));
+        this.values = values.map(row => row.map(v => GroundedFunctionValues.undefinedToNull(v)));
     }
 
-    private undefinedToNull(value: number): number | null {
+    public static undefinedToNull(value: number): number | null {
         return value === undefined ? null : value;
     }
 
@@ -71,7 +71,33 @@ export class ValueSeq {
     constructor(private domainFile: string, private problemFile: string,
         private planFile: string, private options?: ValueSeqOptions) { }
 
-    async evaluate(liftedFunction: Variable, groundedFunctions: Variable[]): Promise<GroundedFunctionValues | undefined> {
+    async evaluateForLifted(liftedFunction: Variable, groundedFunctions: Variable[]): Promise<GroundedFunctionValues | undefined> {
+        const csv = await this.callValueSeq(groundedFunctions);
+
+        if (csv === undefined) { return undefined; }
+
+        const parser = new PlanTimeSeriesParser(groundedFunctions, csv, this.options?.adjustDuplicatedTimeStamps);
+
+        const functionsValuesValues = parser.getFunctionData(liftedFunction);
+        if (functionsValuesValues.isConstant()) { return undefined; } // it is not interesting...
+
+        return new GroundedFunctionValues(liftedFunction, functionsValuesValues.values, functionsValuesValues.legend);
+    }
+
+    async evaluate(groundedFunctions: Variable[]): Promise<Map<string, FunctionValues>> {
+        const csv = await this.callValueSeq(groundedFunctions);
+
+        if (csv === undefined) { return new Map(); }
+
+        const parser = new PlanTimeSeriesParser(groundedFunctions, csv, this.options?.adjustDuplicatedTimeStamps);
+
+        const functionValues = groundedFunctions.map(functionName => parser.getFunctionValues(functionName))
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return new Map(functionValues.filter(fv => !!fv).map(fv => [fv!.variable.getFullName(), fv!]));
+    }
+
+    async callValueSeq(groundedFunctions: Variable[]): Promise<string | undefined> {
         if (groundedFunctions.length === 0) { return undefined; }
 
         const functions = groundedFunctions
@@ -83,7 +109,7 @@ export class ValueSeq {
         const valueSeqArgs = ["-T", this.domainFile, this.problemFile, this.planFile].concat(functions);
 
         if (this.options?.verbose) {
-            console.log(valueSeqCommand + ' ' + valueSeqArgs.map(a => a.includes(' ') ? `"${a}"` : a));
+            console.log(valueSeqCommand + ' ' + valueSeqArgs.map(a => a.includes(' ') ? `"${a}"` : a).join(' '));
         }
 
         const csv = await new Promise<string>((resolve, reject) => {
@@ -105,11 +131,6 @@ export class ValueSeq {
             console.log(csv);
         }
 
-        const parser = new PlanTimeSeriesParser(groundedFunctions, csv, this.options?.adjustDuplicatedTimeStamps);
-
-        const functionsValuesValues = parser.getFunctionData(liftedFunction);
-        if (functionsValuesValues.isConstant()) { return undefined; } // it is not interesting...
-
-        return new GroundedFunctionValues(liftedFunction, functionsValuesValues.values, functionsValuesValues.legend);
+        return csv;
     }
 }

@@ -33,7 +33,7 @@ describe('ValueSeq', () => {
         valueSeqPath = testUtils.getValToolPath(await testUtils.getDownloadedManifest(), manifest => manifest.valueSeqPath);
     });
 
-    describe("#evaluate()", () => {
+    describe("#evaluateForLifted()", () => {
         it('evaluates single function (adjustDuplicateTimeStamp: true)', async () => {
             // GIVEN
             const valueSeq = new ValueSeq(DOMAIN_PATH, PROBLEM_PATH, PLAN_PATH, {
@@ -47,12 +47,11 @@ describe('ValueSeq', () => {
             const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
 
             // WHEN
-            const values = await valueSeq.evaluate(f, [fO1]);
+            const values = await valueSeq.evaluateForLifted(f, [fO1]);
 
             // THEN
             expect(values).to.not.be.undefined;
             if (!values) { return; }
-            console.log(values.toCsv());
             expect(values.legend, "legend").to.have.lengthOf(1);
             expect(values.legend, "legend").to.be.deep.equal(['o1']);
             expect(values.liftedVariable.getFullName(), "lifted var full name").to.be.equal('f ?t - t1');
@@ -75,12 +74,11 @@ describe('ValueSeq', () => {
             const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
 
             // WHEN
-            const values = await valueSeq.evaluate(f, [fO1]);
+            const values = await valueSeq.evaluateForLifted(f, [fO1]);
 
             // THEN
             expect(values).to.not.be.undefined;
             if (!values) { return; }
-            console.log(values.toCsv());
             expect(values.legend, "legend").to.have.lengthOf(1);
             expect(values.legend, "legend").to.be.deep.equal(['o1']);
             expect(values.liftedVariable.getFullName(), "lifted var full name").to.be.equal('f ?t - t1');
@@ -92,5 +90,37 @@ describe('ValueSeq', () => {
         it.skip('evaluates two grounded functions, keeping non-distinct timestamps', () => {
             fail('that would not work yet');
         })
+    });
+    
+    describe("#evaluate()", () => {
+        it('evaluates single function (adjustDuplicateTimeStamp: true)', async () => {
+            // GIVEN
+            const valueSeq = new ValueSeq(DOMAIN_PATH, PROBLEM_PATH, PLAN_PATH, {
+                valueSeqPath: valueSeqPath,
+                adjustDuplicatedTimeStamps: true,
+                verbose: true
+            });
+
+            const f = domain.getFunction('f');
+            if (!f) { fail(`'f' not found in domain`); }
+            const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
+
+            // WHEN
+            const values = await valueSeq.evaluate([fO1]);
+
+            // THEN
+            expect(values).to.not.be.undefined;
+            if (!values) { return; }
+            const fO1Values = values.get(fO1.getFullName());
+            expect(fO1Values).to.not.be.undefined;
+            // todo: expect(fO1Values?.getLegend(), "legend").to.equal(fO1.getFullName());
+            expect(fO1Values?.variable, "variable").to.be.deep.equal(fO1);
+            expect(fO1Values?.getTimeAtIndex(0)).to.equal(0);
+            expect(fO1Values?.getValueAtIndex(0)).to.equal(0);
+            const eps = 1e-3;
+            const td = PlanTimeSeriesParser.TIME_DELTA;
+            const expectedChartValues = [[0, 0], [eps, 0], [eps + td, 10], [10 + eps, 20], [10 + eps + td, 30]];
+            expect(fO1Values?.values).to.deep.equal(expectedChartValues);
+        });
     });
 });

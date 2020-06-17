@@ -21,6 +21,42 @@ export class FunctionValues {
         return this.values.length > 0 ? this.values[this.values.length - 1][0] : NaN;
     }
 
+    getValueAtIndex(index: number): number {
+        if (index >= this.values.length) {
+            throw new Error(`Index ${index} out of bounds of function values.`);
+        }
+
+        return this.values[index][1];
+    }
+
+    getTimeAtIndex(index: number): number {
+        if (index >= this.values.length) {
+            throw new Error(`Index ${index} out of bounds of function values.`);
+        }
+
+        return this.values[index][0];
+    }
+
+    getValue(time: number): number {
+        let lastTime = 0;
+        let lastValue = NaN;
+
+        for (let index = 0; index < this.values.length; index++) {
+            const rowTime = this.getTimeAtIndex(index);
+            const rowValue = this.getValueAtIndex(index);
+            if (rowTime === time) {
+                return rowValue;
+            } else if (rowTime < time) {
+                lastTime = rowTime;
+                lastValue = rowValue;
+            } else {
+                return lastValue + (rowValue - lastValue) / (rowTime - lastTime) * (time - lastTime);
+            }
+        }
+        // the time requested is after the last value
+        return lastValue;
+    }
+
     getLegend(): string {
         return this.legend;
     }

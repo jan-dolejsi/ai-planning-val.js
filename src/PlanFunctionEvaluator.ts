@@ -1,12 +1,14 @@
 /* --------------------------------------------------------------------------------------------
- * Copyright (c) Jan Dolejsi. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
+* Copyright (c) Jan Dolejsi. All rights reserved.
+* Licensed under the MIT License. See License.txt in the project root for license information.
+* ------------------------------------------------------------------------------------------ */
 
-import { Variable, ProblemInfo, DomainInfo, PlanInfo, Grounder, Plan, utils } from 'pddl-workspace';
+import { Variable, ProblemInfo, DomainInfo, PlanInfo, Grounder, Plan, utils, NumericExpression, EvaluationContext } from 'pddl-workspace';
 import { ValStep } from './ValStep';
 import { GroundedFunctionValues, ValueSeq, ValueSeqOptions } from './ValueSeq';
+import { FunctionValues } from './PlanTimeSeriesParser';
 
+/* eslint-disable @typescript-eslint/no-use-before-define */
 
 export interface PlanFunctionEvaluatorOptions extends ValueSeqOptions {
     /** If set to true, functions are grouped by lifted function name */
@@ -75,6 +77,43 @@ export class PlanFunctionEvaluator {
         }));
 
         return chartData;
+    }
+
+    async evaluateExpressionInputs(expression: NumericExpression): Promise<Map<string, FunctionValues>> {
+        const inputVariables = expression.getVariables();
+
+        const domainFile = await utils.Util.toPddlFile("domain", this.domain.getText());
+        const problemFile = await utils.Util.toPddlFile("problem", this.problem.getText());
+        const planFile = await utils.Util.toPddlFile("plan", this.plan.getText());
+
+        return await new ValueSeq(domainFile, problemFile, planFile, this.options).evaluate(inputVariables);
+    }
+
+    async evaluateExpression(expression: NumericExpression): Promise<FunctionValues> {
+        const inputValues = await this.evaluateExpressionInputs(expression);
+
+        const fv = new FunctionValues(new Variable("~expression"));
+
+        if (inputValues.size === 0) {
+            const context = new StaticEvaluationContext();
+            const constantValue = expression.evaluate(context);
+            const constantDefinedValue = constantValue === undefined ? NaN : constantValue;
+            fv.addValue(0, constantDefinedValue);
+            fv.addValue(this.plan.makespan, constantDefinedValue);
+        } else {
+            const context = new ValueSeqEvaluationContext(inputValues);
+
+            const firstInput = [...inputValues.values()][0];
+
+            for (let index = 0; index < firstInput.values.length; index++) {
+                const time = firstInput.getTimeAtIndex(index);
+                context.setTime(time);
+                const valueAtTime = expression.evaluate(context);
+                fv.addValue(time, valueAtTime !== undefined ? valueAtTime : NaN);
+            }
+        }
+
+        return fv;
     }
 
     groupByLifted(variables: Variable[]): Map<Variable, Variable[]> {
@@ -151,7 +190,7 @@ export class PlanFunctionEvaluator {
         if (groundedFunctions.length === 0) { return; }
 
         const valueSeq = new ValueSeq(domainFile, problemFile, planFile, this.options);
-        let values = await valueSeq.evaluate(liftedFunction, groundedFunctions);
+        let values = await valueSeq.evaluateForLifted(liftedFunction, groundedFunctions);
 
         if (!values) { // it was either empty (no grounding) or constant
             return;
@@ -167,4 +206,29 @@ export class PlanFunctionEvaluator {
     ground(variable: Variable): Variable[] {
         return this.grounder.ground(variable);
     }
+}
+
+class StaticEvaluationContext implements EvaluationContext {
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    get(variableName: string): number | boolean | undefined {
+        throw new Error("Method not implemented.");
+    }
+}
+
+
+class ValueSeqEvaluationContext implements EvaluationContext {
+    time = 0;
+
+    constructor(private readonly values: Map<string, FunctionValues>) { }
+
+    setTime(time: number): void {
+        this.time = time;
+    }
+
+    get(variableName: string): number | boolean | undefined {
+        const values = this.values.get(variableName);
+        return values?.getValue(this.time);
+    }
+
 }
