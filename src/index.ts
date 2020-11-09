@@ -5,3 +5,6 @@ export * from './ValStep';
 export * from './ValDownloader';
 export * from './ValueSeq';
 export * from './PlanTimeSeriesParser';
+export * from './Parser';
+export * from './ProblemPattern';
+export * from './valUtils';

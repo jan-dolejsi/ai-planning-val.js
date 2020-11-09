@@ -32,6 +32,22 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch mock parser",
+            "program": "${file}",
+            "args": [
+                "-d:c:\\domain.pddl",
+                "-p:c:\\problem.pddl"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }
