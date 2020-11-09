@@ -7,6 +7,7 @@ Javascript/typescript wrapper for VAL (plan validation tools from [KCL Planning 
 
 - [VAL.js - AI Planning Plan Validation](#valjs---ai-planning-plan-validation)
   - [VAL Download](#val-download)
+  - [Parse PDDL Domains and Problems](#parse-pddl-domains-and-problems)
   - [ValStep state-by-state plan evaluation](#valstep-state-by-state-plan-evaluation)
     - [Batch plan evaluation](#batch-plan-evaluation)
     - [Batch evaluation with notification events fired for each intermediate state](#batch-evaluation-with-notification-events-fired-for-each-intermediate-state)
@@ -63,6 +64,40 @@ import { ValDownloader } from 'ai-planning-val';
 
 const manifest = await new ValDownloader().download(37, './val_binaries/');
 ```
+
+## [Parse](https://github.com/KCL-Planning/VAL/blob/master/applications/README.md#parser) PDDL Domains and Problems
+
+```typescript
+import { parser, Happening, HappeningType } from 'pddl-workspace';
+import { ValStep } from 'ai-planning-val';
+```
+
+```typescript
+const domain = parser.PddlDomainParser.parseText(domainText, URI.file('domain'));
+const problem = await parser.PddlProblemParser.parseText(problemText, URI.file('problem'));
+
+const pddlParser = new Parser({ parserPath: parserPath });
+
+const parsingProblems = await pddlParser.validate(domain, problem);
+
+parsingProblems.forEach((issues, fileUri) => {
+    console.log(`Parsing problems in ${fileUri}`);
+    issues.forEach(issue => console.log(`At line: ${issue.range.start.line} ${issue.severity}: ${issue.problem}`))
+});
+```
+
+The above may print something like:
+
+```text
+Parsing problems in file:///domain
+
+At line: 5 warning: Undeclared requirement :fluents
+At line: 10 error: Syntax error in domain
+```
+
+The `Parser` class may be also used to call other PDDL parser. To do that, override the `getSyntax()` and `createPatternMatchers()` methods.
+
+To see an custom `Parser` implementation sample, see the `MockParser` class in `ParserTest.ts` and the `mock-parser.js`.
 
 ## [ValStep](https://github.com/KCL-Planning/VAL/blob/master/applications/README.md#valstep) state-by-state plan evaluation
 

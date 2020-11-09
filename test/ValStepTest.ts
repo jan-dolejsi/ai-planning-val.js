@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { ValStep } from './src';
-import { parser, Happening, HappeningType, DomainInfo, ProblemInfo, utils } from 'pddl-workspace';
+import { parser, Happening, HappeningType, DomainInfo, ProblemInfo } from 'pddl-workspace';
 import * as testUtils from './testUtils';
 
 const domainText = `(define (domain domain1)
