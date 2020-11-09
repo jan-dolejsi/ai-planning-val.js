@@ -41,10 +41,7 @@ export interface ParserOptions {
 /** PDDL domain and problem parser. */
 export class Parser {
 
-    private syntax: string[];
-
     constructor(private options: ParserOptions) {
-        this.syntax = this.getSyntax();
     }
 
     protected getSyntax(): string[] {
@@ -116,7 +113,7 @@ export class Parser {
     }
 
     private async validateProblem(domainFilePath: string, problemFilePath: string, context: ParserRunContext, parsingProblems: ParsingProblems): Promise<ParsingProblems> {
-        const syntaxFragments = this.syntax;
+        const syntaxFragments = this.getSyntax();
         if (syntaxFragments.length < 1) {
             throw new Error('Parser syntax pattern should include $(domain) and $(problem) macros');
         }
@@ -135,7 +132,7 @@ export class Parser {
     private async runProcess(args: string[], context: ParserRunContext, parsingProblems: ParsingProblems): Promise<ParsingProblems> {
         return new Promise<ParsingProblems>((resolve, reject) => {
             const exePath = this.options.executablePath ?? "Parser";
-            console.log(`${exePath} ` + args.join(' '));
+            // console.log(`${exePath} ` + args.join(' '));
             const child = process.spawn(exePath, args, { cwd: this.options.cwd });
 
             let trailingLine = '';
