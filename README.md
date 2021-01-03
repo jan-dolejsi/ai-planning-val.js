@@ -17,6 +17,7 @@ Javascript/typescript wrapper for VAL (plan validation tools from [KCL Planning 
   - [`PlanFunctionEvaluator` class](#planfunctionevaluator-class)
     - [Evaluating `NumericExpression`s to a time-series over plan happenings](#evaluating-numericexpressions-to-a-time-series-over-plan-happenings)
   - [`HappeningsToValStep` utility](#happeningstovalstep-utility)
+  - [Compiling and contributing](#compiling-and-contributing)
 
 ## VAL Download
 
@@ -352,3 +353,7 @@ functionValues.getValue(5); returns value correspnoding to time `5`
 ## `HappeningsToValStep` utility
 
 Converts the `Happening` objects to input to the `ValStep` executable.
+
+## Compiling and contributing
+
+Install node.js 12.14.1.

@@ -15,7 +15,7 @@ import {
 
 import { URI } from 'vscode-uri';
 import { ProblemPattern } from './ProblemPattern';
-import { PddlFactory } from './valUtils';
+import { PddlFactory, Util } from './valUtils';
 
 export class ParserError extends Error {
     constructor(public readonly message: string, public readonly domain: DomainInfo,
@@ -49,12 +49,12 @@ export class Parser {
     }
 
     async validate(domainInfo: DomainInfo, problemInfo?: ProblemInfo): Promise<ParsingProblems> {
-        const domainFilePath = utils.Util.toPddlFileSync("domain", domainInfo.getText());
+        const domainFilePath = Util.toPddlFileSync("domain", domainInfo.getText());
 
         const parsingProblems = new ParsingProblems();
 
         if (!problemInfo) {
-            const problemFilePath = utils.Util.toPddlFileSync("problem", PddlFactory.createEmptyProblem('dummy', domainInfo.name));
+            const problemFilePath = Util.toPddlFileSync("problem", PddlFactory.createEmptyProblem('dummy', domainInfo.name));
 
             const context: ParserRunContext = {
                 domain: domainInfo,
@@ -65,7 +65,7 @@ export class Parser {
             return await this.validateProblem(domainFilePath, problemFilePath, context, parsingProblems);
         }
         else {
-            const problemFilePath = utils.Util.toPddlFileSync("problem", problemInfo.getText());
+            const problemFilePath = Util.toPddlFileSync("problem", problemInfo.getText());
 
             const context: ParserRunContext = {
                 domain: domainInfo,
