@@ -3,10 +3,11 @@
 * Licensed under the MIT License. See License.txt in the project root for license information.
 * ------------------------------------------------------------------------------------------ */
 
-import { Variable, ProblemInfo, DomainInfo, PlanInfo, Grounder, Plan, utils, NumericExpression, EvaluationContext } from 'pddl-workspace';
+import { Variable, ProblemInfo, DomainInfo, PlanInfo, Grounder, Plan, NumericExpression, EvaluationContext } from 'pddl-workspace';
 import { ValStep } from './ValStep';
 import { GroundedFunctionValues, ValueSeq, ValueSeqOptions } from './ValueSeq';
 import { FunctionValues } from './PlanTimeSeriesParser';
+import { Util } from './valUtils';
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
@@ -55,9 +56,9 @@ export class PlanFunctionEvaluator {
      * Evaluates the functions individually, or in groups by lifted function.
      */
     async evaluate(): Promise<Map<Variable, GroundedFunctionValues>> {
-        const domainFile = await utils.Util.toPddlFile("domain", this.domain.getText());
-        const problemFile = await utils.Util.toPddlFile("problem", this.problem.getText());
-        const planFile = await utils.Util.toPddlFile("plan", this.plan.getText());
+        const domainFile = await Util.toPddlFile("domain", this.domain.getText());
+        const problemFile = await Util.toPddlFile("problem", this.problem.getText());
+        const planFile = await Util.toPddlFile("plan", this.plan.getText());
 
         const chartData = new Map<Variable, GroundedFunctionValues>();
 
@@ -82,9 +83,9 @@ export class PlanFunctionEvaluator {
     async evaluateExpressionInputs(expression: NumericExpression): Promise<Map<string, FunctionValues>> {
         const inputVariables = expression.getVariables();
 
-        const domainFile = await utils.Util.toPddlFile("domain", this.domain.getText());
-        const problemFile = await utils.Util.toPddlFile("problem", this.problem.getText());
-        const planFile = await utils.Util.toPddlFile("plan", this.plan.getText());
+        const domainFile = await Util.toPddlFile("domain", this.domain.getText());
+        const problemFile = await Util.toPddlFile("problem", this.problem.getText());
+        const planFile = await Util.toPddlFile("plan", this.plan.getText());
 
         return await new ValueSeq(domainFile, problemFile, planFile, this.options).evaluate(inputVariables);
     }

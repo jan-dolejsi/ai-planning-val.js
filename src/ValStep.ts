@@ -6,6 +6,7 @@
 import * as process from 'child_process';
 import { EventEmitter } from 'events';
 import * as path from 'path';
+import * as fs from 'fs';
 
 import {
     utils, parser, ProblemInfo, TimedVariableValue, VariableValue,
@@ -13,6 +14,7 @@ import {
 } from 'pddl-workspace';
 
 import { HappeningsToValStep } from './HappeningsToValStep';
+import { Util } from './valUtils';
 
 export class ValStepError extends Error {
     constructor(public readonly message: string, public readonly domain: DomainInfo,
@@ -102,7 +104,7 @@ export class ValStep extends EventEmitter {
         }
 
         let args = await this.createValStepArgs();
-        const valStepsPath = await utils.Util.toFile('valSteps', '.valsteps', this.valStepInput);
+        const valStepsPath = await Util.toFile('valSteps', '.valsteps', this.valStepInput);
         args = ['-i', valStepsPath, ...args];
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -326,8 +328,8 @@ export class ValStep extends EventEmitter {
     private async createValStepArgs(): Promise<string[]> {
         // copy editor content to temp files to avoid using out-of-date content on disk
         try {
-            const domainFilePath = await utils.Util.toPddlFile('domain', this.domainInfo.getText());
-            const problemFilePath = await utils.Util.toPddlFile('problem', this.problemInfo.getText()); // todo: this is where we are sending un-pre-processed problem text when rendering plan
+            const domainFilePath = await Util.toPddlFile('domain', this.domainInfo.getText());
+            const problemFilePath = await Util.toPddlFile('problem', this.problemInfo.getText()); // todo: this is where we are sending un-pre-processed problem text when rendering plan
 
             const args = [domainFilePath, problemFilePath];
             return args;
@@ -495,16 +497,16 @@ export class ValStep extends EventEmitter {
         const domainFile = "domain.pddl";
         const problemFile = "problem.pddl";
         const inputFile = "happenings.valsteps";
-        await utils.afs.writeFile(path.join(casePath, domainFile), err.domain.getText(), { encoding: "utf-8" });
-        await utils.afs.writeFile(path.join(casePath, problemFile), err.problem.getText(), { encoding: "utf-8" });
-        await utils.afs.writeFile(path.join(casePath, inputFile), err.valStepInput, { encoding: "utf-8" });
+        await fs.promises.writeFile(path.join(casePath, domainFile), err.domain.getText(), { encoding: "utf-8" });
+        await fs.promises.writeFile(path.join(casePath, problemFile), err.problem.getText(), { encoding: "utf-8" });
+        await fs.promises.writeFile(path.join(casePath, inputFile), err.valStepInput, { encoding: "utf-8" });
 
         const command = `:: The purpose of this batch file is to be able to reproduce the valstep error
 type ${inputFile} | ${utils.Util.q(valStepPath)} ${domainFile} ${problemFile}
 :: or for latest version of ValStep:
 ${utils.Util.q(valStepPath)} -i ${inputFile} ${domainFile} ${problemFile}`;
 
-        await utils.afs.writeFile(path.join(casePath, "run.cmd"), command, { encoding: "utf-8" });
+        await fs.promises.writeFile(path.join(casePath, "run.cmd"), command, { encoding: "utf-8" });
         return casePath;
     }
 }

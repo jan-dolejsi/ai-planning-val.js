@@ -80,7 +80,7 @@ export class ValDownloader {
         await ValDownloader.deleteAll(dropEntries.map(file => path.join(destinationDirectory, file)));
 
         // delete the drop zip
-        await utils.afs.unlink(zipPath);
+        await fs.promises.unlink(zipPath);
 
         const manifest: ValVersion = {
             buildId: buildId, version: version, files: valToolFileNames,
@@ -127,7 +127,7 @@ export class ValDownloader {
         // 1. delete downloaded files
         const deletionPromises = files
             .filter(file => fs.existsSync(file))
-            .map(async file => await utils.afs.unlink(file));
+            .map(async file => await fs.promises.unlink(file));
         await Promise.all(deletionPromises);
 
         // 2. delete empty directories
@@ -138,7 +138,7 @@ export class ValDownloader {
 
         for (const directory of emptyDirectories) {
             if (await utils.afs.exists(directory) && await utils.afs.isEmpty(directory)) {
-                await utils.afs.rmdir(directory);
+                await fs.promises.rmdir(directory);
             }
         }
     }
@@ -219,7 +219,7 @@ function findValToolPath(allFiles: string[] | undefined, toolName: string): stri
 
 export async function readValManifest(manifestPath: string): Promise<ValVersion> {
     try {
-        const versionAsString = await utils.afs.readFile(manifestPath, { encoding: 'utf8' });
+        const versionAsString = await fs.promises.readFile(manifestPath, { encoding: 'utf8' });
         return JSON.parse(versionAsString);
     }
     catch (err) {
@@ -230,7 +230,7 @@ export async function readValManifest(manifestPath: string): Promise<ValVersion>
 export async function writeValManifest(manifestPath: string, valVersion: ValVersion): Promise<void> {
     const json = JSON.stringify(valVersion, null, 2);
     try {
-        await utils.afs.writeFile(manifestPath, json, { encoding: 'utf8' });
+        await fs.promises.writeFile(manifestPath, json, { encoding: 'utf8' });
     }
     catch (err) {
         throw new Error(`Error saving VAL manifest ${err.name}: ${err.message}`);
