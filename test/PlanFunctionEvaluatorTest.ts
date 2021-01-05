@@ -42,7 +42,7 @@ describe('PlanFunctionEvaluator', () => {
         problem = parsedProblem;
 
         const planText = fs.readFileSync(PLAN_PATH, { encoding: 'utf8', flag: 'r' });
-        plan = parser.PddlPlanParser.parseText(planText, 0.001, URI.file(PLAN_PATH));
+        plan = new parser.PddlPlanParser().parseText(planText, 0.001, URI.file(PLAN_PATH));
         console.log(JSON.stringify(plan.getSteps(), null, 2));
 
         valStepPath = testUtils.getValToolPath(await testUtils.getDownloadedManifest(), manifest => manifest.valStepPath);
