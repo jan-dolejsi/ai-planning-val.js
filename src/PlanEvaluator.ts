@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { PlanInfo } from 'pddl-workspace';
+import { Plan, PlanInfo } from 'pddl-workspace';
 import { ProblemInfo, TimedVariableValue } from 'pddl-workspace';
 import { DomainInfo } from 'pddl-workspace';
 import { ValStep, ValStepOptions } from './ValStep';
@@ -19,6 +19,23 @@ export class PlanEvaluator {
         const happenings = planInfo.getHappenings();
 
         return await new ValStep(domainInfo, problemInfo)
+            .executeBatch(happenings, options);
+    }
+
+    async evaluatePlan(plan: Plan, options: ValStepOptions): Promise<TimedVariableValue[] | undefined> {
+        // todo: run semantic validation for the plan first
+
+        const happenings = PlanInfo.getHappenings(plan.steps);
+
+        if (!plan.domain) {
+            throw new Error('Domain not specified');
+        }
+
+        if (!plan.problem) {
+            throw new Error('Problem not specified');
+        }
+
+        return await new ValStep(plan.domain, plan.problem)
             .executeBatch(happenings, options);
     }
 }
