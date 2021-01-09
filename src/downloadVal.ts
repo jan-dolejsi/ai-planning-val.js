@@ -15,7 +15,7 @@ import path from 'path';
 
 const argv = yargs.option('buildId', {
     description: 'VAL Build ID (see ID of the latest from https://dev.azure.com/schlumberger/ai-planning-validation/_build/latest?definitionId=2&branchName=master)',
-    default: 46,
+    default: 55,
     type: "number"
 }).option('destination', {
     description: 'Target for the binaries to be unzipped into',
