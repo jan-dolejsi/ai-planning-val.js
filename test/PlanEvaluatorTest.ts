@@ -68,4 +68,31 @@ describe('PlanEvaluator', () => {
             }
         });
     });
+
+    describe("#evaluateHappenings()", () => {
+        it('evaluates simple temporal numeric plan', async () => {
+            // GIVEN
+            const planEvaluator = new PlanEvaluator();
+
+            const happenings = plan.getHappenings().slice(0, 1);
+            console.log(JSON.stringify(happenings, null, 2));
+
+            // WHEN
+            const finalState = await planEvaluator.evaluateHappenings(domain, problem, happenings, { valStepPath: valStepPath });
+            console.log(JSON.stringify(finalState, null, 2));
+
+            // THEN
+            expect(finalState).to.not.be.undefined;
+            if (!finalState) { fail(); }
+            expect(finalState, "should have N variables").to.have.lengthOf(2);
+            {
+                const qO1 = finalState.find(v => v.getVariableName() === 'q o1');
+                expect(qO1?.getValue()).to.equal(true, "q o1 value");
+            }
+            {
+                const fO1 = finalState.find(v => v.getVariableName() === 'f o1');
+                expect(fO1?.getValue()).to.equal(10, "f o1 value");
+            }
+        });
+    });
 });

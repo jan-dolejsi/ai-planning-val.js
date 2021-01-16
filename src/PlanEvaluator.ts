@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { Plan, PlanInfo } from 'pddl-workspace';
+import { Happening, Plan, PlanInfo } from 'pddl-workspace';
 import { ProblemInfo, TimedVariableValue } from 'pddl-workspace';
 import { DomainInfo } from 'pddl-workspace';
 import { ValStep, ValStepOptions } from './ValStep';
@@ -13,13 +13,17 @@ import { ValStep, ValStepOptions } from './ValStep';
  */
 export class PlanEvaluator {
 
+    async evaluateHappenings(domainInfo: DomainInfo, problemInfo: ProblemInfo, happenings: Happening[], options: ValStepOptions): Promise<TimedVariableValue[] | undefined> {
+        return await new ValStep(domainInfo, problemInfo)
+            .executeBatch(happenings, options);
+    }
+
     async evaluate(domainInfo: DomainInfo, problemInfo: ProblemInfo, planInfo: PlanInfo, options: ValStepOptions): Promise<TimedVariableValue[] | undefined> {
         // todo: run semantic validation for the plan first
 
         const happenings = planInfo.getHappenings();
 
-        return await new ValStep(domainInfo, problemInfo)
-            .executeBatch(happenings, options);
+        return this.evaluateHappenings(domainInfo, problemInfo, happenings, options);
     }
 
     async evaluatePlan(plan: Plan, options: ValStepOptions): Promise<TimedVariableValue[] | undefined> {
@@ -35,7 +39,6 @@ export class PlanEvaluator {
             throw new Error('Problem not specified');
         }
 
-        return await new ValStep(plan.domain, plan.problem)
-            .executeBatch(happenings, options);
+        return this.evaluateHappenings(plan.domain, plan.problem, happenings, options);
     }
 }
