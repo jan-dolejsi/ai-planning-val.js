@@ -16,6 +16,7 @@ Javascript/typescript wrapper for VAL (plan validation tools from [KCL Planning 
   - [`ValueSeq` class](#valueseq-class)
   - [`PlanFunctionEvaluator` class](#planfunctionevaluator-class)
     - [Evaluating `NumericExpression`s to a time-series over plan happenings](#evaluating-numericexpressions-to-a-time-series-over-plan-happenings)
+    - [Evaluating all metrics](#evaluating-all-metrics)
   - [`HappeningsToValStep` utility](#happeningstovalstep-utility)
   - [Compiling and contributing](#compiling-and-contributing)
 
@@ -348,6 +349,15 @@ const metric = problem.getMetrics()[0];
 const functionValues = await planEvaluator.evaluateExpression(metric.getExpression());
 
 functionValues.getValue(5); returns value correspnoding to time `5`
+```
+
+### Evaluating all metrics
+
+`ValueSeq` utility responds to special variable name `$metrics` by calculating time series for all metrics defined in the problem file. Yes, there may be multiple.\
+This is wrapped by the the `evaluateMetrics` method:
+
+```typescript
+const functionValues = await planEvaluator.evaluateMetrics();
 ```
 
 ## `HappeningsToValStep` utility

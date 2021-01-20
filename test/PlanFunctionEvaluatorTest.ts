@@ -80,6 +80,36 @@ describe('PlanFunctionEvaluator', () => {
         });
     });
 
+    describe("#evaluateMetrics()", () => {
+        it('evaluates all metrics defined in the problem', async () => {        
+            // GIVEN
+            const planObj = new Plan(plan.getSteps(), domain, problem);
+            const planEvaluator = new PlanFunctionEvaluator(planObj, {
+                valueSeqPath: valueSeqPath, valStepPath: valStepPath, shouldGroupByLifted: false
+            });
+
+            // WHEN
+            const functionValues = await planEvaluator.evaluateMetrics();
+            [...functionValues.values()].forEach(variableValues => {
+                console.log(variableValues.values);
+            });
+
+            // THEN
+            expect(functionValues, "should have N variables").to.have.lengthOf(2);
+            const metric0 = [...functionValues.keys()].find(v => v === "metric 0");
+            expect(metric0).is.not.undefined;
+            if (metric0) {
+                const variableFO1Values = functionValues.get(metric0);
+                expect(variableFO1Values?.variable.getFullName()).to.equal("metric 0");
+
+                const eps = 1e-3;
+                const td = PlanTimeSeriesParser.TIME_DELTA;
+                const expectedChartValues = [[eps, 20], [10 + eps, 40], [10 + eps + td, 60]];
+                expect(variableFO1Values?.values).to.deep.equal(expectedChartValues);
+            }
+        });
+    });
+
     describe("#evaluateExpression(expression)", () => {
         it('evaluates expression', async () => {        
             // GIVEN

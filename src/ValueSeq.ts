@@ -97,6 +97,19 @@ export class ValueSeq {
         return new Map(functionValues.filter(fv => !!fv).map(fv => [fv!.variable.getFullName(), fv!]));
     }
 
+    async evaluateMetric(): Promise<Map<string, FunctionValues>> {
+        const csv = await this.callValueSeq([new Variable('$metrics')]);
+
+        if (csv === undefined) { return new Map(); }
+
+        const parser = new PlanTimeSeriesParser([], csv, this.options?.adjustDuplicatedTimeStamps);
+
+        const functionValues = parser.functions.map(functionName => parser.getFunctionValues(functionName))
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return new Map(functionValues.filter(fv => !!fv).map(fv => [fv!.variable.getFullName(), fv!]));
+    }
+
     async callValueSeq(groundedFunctions: Variable[]): Promise<string | undefined> {
         if (groundedFunctions.length === 0) { return undefined; }
 

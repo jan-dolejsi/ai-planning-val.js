@@ -80,6 +80,14 @@ export class PlanFunctionEvaluator {
         return chartData;
     }
 
+    async evaluateMetrics(): Promise<Map<string, FunctionValues>> {
+        const domainFile = await Util.toPddlFile("domain", this.domain.getText());
+        const problemFile = await Util.toPddlFile("problem", this.problem.getText());
+        const planFile = await Util.toPddlFile("plan", this.plan.getText());
+
+        return await new ValueSeq(domainFile, problemFile, planFile, this.options).evaluateMetric();
+    }
+
     async evaluateExpressionInputs(expression: NumericExpression): Promise<Map<string, FunctionValues>> {
         const inputVariables = expression.getVariables();
 

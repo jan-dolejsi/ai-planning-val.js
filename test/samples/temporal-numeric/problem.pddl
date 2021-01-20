@@ -14,4 +14,8 @@
     
 ; Twice f for o1 [unit]
 (:metric minimize (* (f o1) 2))
+
+; Second alternative metric [unit]
+(:metric minimize (* (f o1) (f o1)))
+
 )

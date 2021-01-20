@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { Variable } from 'pddl-workspace';
+import { ObjectInstance, Variable } from 'pddl-workspace';
 
 export class FunctionValues {
     values: number[][] = [];
@@ -134,8 +134,7 @@ export class PlanTimeSeriesParser {
         lines
             .filter(line => !line.includes(':'))
             .forEach(line => {
-                const newFunction = functions.find(f =>
-                    line.match(new RegExp("^\s*(;)?\s*" + f.getFullName() + "\s*$", "i")));
+                const newFunction = this.findMatchingFunction(line, functions);
 
                 if (newFunction) {
                     if (currentFunctionValues) { this.addFunctionValues(currentFunctionValues); }
@@ -167,6 +166,22 @@ export class PlanTimeSeriesParser {
 
         if (currentFunctionValues) {
             this.addFunctionValues(currentFunctionValues);
+        }
+    }
+
+    findMatchingFunction(line: string, functions: Variable[]): Variable | undefined {
+        const existingFunction = functions.find(f =>
+            line.match(new RegExp("^\s*(;)?\s*" + f.getFullName() + "\s*$", "i")));
+        
+        if (existingFunction) {
+            return existingFunction;
+        }
+        
+        const metricNameMatch = line.match(/^\s*(;)?\s*metric\s*(\d+)$/i);
+        if (metricNameMatch) {
+            const metricVariable = new Variable('metric', [new ObjectInstance(metricNameMatch[2] ?? 'unidentified', "#")]);
+            functions.push(metricVariable)
+            return metricVariable;
         }
     }
 
