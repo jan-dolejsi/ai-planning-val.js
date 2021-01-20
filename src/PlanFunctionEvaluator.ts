@@ -73,7 +73,7 @@ export class PlanFunctionEvaluator {
         await Promise.all(liftedFunctions.map(async (liftedFunction) => {
             const groundedFunctions = changingFunctionsGrouped.get(liftedFunction);
             if (groundedFunctions) {
-                await this.addChartValues(domainFile, problemFile, planFile, liftedFunction, groundedFunctions, chartData);
+                await this.tryAddChartValues(domainFile, problemFile, planFile, liftedFunction, groundedFunctions, chartData);
             }
         }));
 
