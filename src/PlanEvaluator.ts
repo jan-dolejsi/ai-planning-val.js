@@ -16,6 +16,8 @@ export class PlanEvaluator {
     async evaluateHappenings(domainInfo: DomainInfo, problemInfo: ProblemInfo, happenings: Happening[], options: ValStepOptions): Promise<TimedVariableValue[] | undefined> {
         return await new ValStep(domainInfo, problemInfo)
             .executeBatch(happenings, options);
+
+        // todo: should correct the predicate/function/object names to the original capitalization
     }
 
     async evaluate(domainInfo: DomainInfo, problemInfo: ProblemInfo, planInfo: PlanInfo, options: ValStepOptions): Promise<TimedVariableValue[] | undefined> {

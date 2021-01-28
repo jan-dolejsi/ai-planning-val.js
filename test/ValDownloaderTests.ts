@@ -12,7 +12,7 @@ async function assertExists(targetDirectory: string, relativePath?: string, tool
     expect(exists, `File ${completePath} should exist.`).to.be.equal(true);
 }
 
-const expectedBuildId = 55;
+const expectedBuildId = 58;
 const VAL_DIRECTORY = 'val';
 export const VAL_MANIFEST = path.join('.', VAL_DIRECTORY, 'val.json');
 const VAL_DIRECTORY_ABS = path.resolve(__dirname, '..', '..', VAL_DIRECTORY);

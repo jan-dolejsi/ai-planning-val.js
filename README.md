@@ -30,7 +30,7 @@ please adjust the chmod yourself.
 If you install this package globally using `npm install ai-panning-val --global`, you can use this command from anywhere:
 
 ```bash
-downloadVal --buildId=37 --destination=./val_binaries/
+downloadVal --buildId=58 --destination=./val_binaries/
 ```
 
 As a result, a folder named after the VAL version gets created in the `./val_binaries/` together with a `val.json` manifest:
@@ -64,7 +64,7 @@ Alternatively, you can run this from your Javascript code:
 ```javascript
 import { ValDownloader } from 'ai-planning-val';
 
-const manifest = await new ValDownloader().download(37, './val_binaries/');
+const manifest = await new ValDownloader().download(58, './val_binaries/');
 ```
 
 ## [Parse](https://github.com/KCL-Planning/VAL/blob/master/applications/README.md#parser) PDDL Domains and Problems
