@@ -171,13 +171,13 @@ export class PlanTimeSeriesParser {
 
     findMatchingFunction(line: string, functions: Variable[]): Variable | undefined {
         const existingFunction = functions.find(f =>
-            line.match(new RegExp("^\s*(;)?\s*" + f.getFullName() + "\s*$", "i")));
+            line.match(new RegExp("^\s*(;)*\s*" + f.getFullName() + "\s*$", "i")));
         
         if (existingFunction) {
             return existingFunction;
         }
         
-        const metricNameMatch = line.match(/^\s*(;)?\s*metric\s*(\d+)$/i);
+        const metricNameMatch = line.match(/^\s*(;)*\s*metric\s*(\d+)$/i);
         if (metricNameMatch) {
             const metricVariable = new Variable('metric', [new ObjectInstance(metricNameMatch[2] ?? 'unidentified', "#")]);
             functions.push(metricVariable)
