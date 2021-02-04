@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See License.txt in the project root for license information.
 * ------------------------------------------------------------------------------------------ */
 
-import { Variable, ProblemInfo, DomainInfo, PlanInfo, Grounder, Plan, NumericExpression, EvaluationContext } from 'pddl-workspace';
+import { Variable, ProblemInfo, DomainInfo, PlanInfo, Grounder, Plan, NumericExpression, EvaluationContext, TypeObjectMap } from 'pddl-workspace';
 import { ValStep } from './ValStep';
 import { GroundedFunctionValues, ValueSeq, ValueSeqOptions } from './ValueSeq';
 import { FunctionValues } from './PlanTimeSeriesParser';
@@ -25,6 +25,7 @@ export class PlanFunctionEvaluator {
     private readonly grounder: Grounder;
     private readonly problem: ProblemInfo;
     private readonly domain: DomainInfo;
+    private readonly allConstantsAndObjects: TypeObjectMap;
 
     /**
      * Constructs
@@ -39,6 +40,7 @@ export class PlanFunctionEvaluator {
         this.domain = this.plan.domain;
         this.problem = this.plan.problem;
         this.grounder = new Grounder(this.plan.domain, this.plan.problem);
+        this.allConstantsAndObjects = this.domain.getConstants().merge(this.problem.getObjectsTypeMap());
     }
 
     /**
@@ -173,9 +175,8 @@ export class PlanFunctionEvaluator {
         const liftedVariableName = variableNameFragments[0];
         const liftedVariable = this.domain.getFunction(liftedVariableName);
         if (!liftedVariable) { return null; }
-        const allConstantsAndObjects = this.domain.getConstants().merge(this.problem.getObjectsTypeMap());
         const objects = variableNameFragments.slice(1)
-            .map(objectName => allConstantsAndObjects.getTypeOf(objectName)?.getObjectInstance(objectName))
+            .map(objectName => this.allConstantsAndObjects.getTypeOfCaseInsensitive(objectName)?.getObjectInstance(objectName))
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             .filter(o => !!o).map(o => o!);
         return liftedVariable.bind(objects);
