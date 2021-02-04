@@ -80,6 +80,24 @@ describe('PlanFunctionEvaluator', () => {
         });
     });
 
+    describe("#getFunction()", () => {
+        it('finds function case sensitive', async () => {        
+            // GIVEN
+            const planObj = new Plan(plan.getSteps(), domain, problem);
+            const planEvaluator = new PlanFunctionEvaluator(planObj, {
+                valueSeqPath: valueSeqPath, valStepPath: valStepPath, shouldGroupByLifted: false
+            });
+
+            // WHEN
+            const fO1 = planEvaluator.getFunction("f O1");
+            const fo1 = planEvaluator.getFunction("f o1");
+
+            // THEN
+            expect(fO1).not.undefined;
+            expect(fo1).not.undefined;
+        });
+    });
+
     describe("#evaluateMetrics()", () => {
         it('evaluates all metrics defined in the problem', async () => {        
             // GIVEN
