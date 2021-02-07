@@ -23,6 +23,14 @@ export class UnsupportedOperatingSystem implements Error {
     stack?: string | undefined;
 }
 
+export const WIN32 = "win32";
+export const LINUX = "linux";
+export const DARWIN = "darwin";
+export type Platform = "win32" | "linux" | "darwin" | undefined;
+export const X64 = "x64";
+export const X32 = "x32";
+export type Architecture = "x64" | "x32" | undefined;
+
 export class ValDownloader {
 
     static readonly VAL_BINARY_PROJECT = "https://dev.azure.com/schlumberger/ai-planning-validation";
@@ -34,13 +42,15 @@ export class ValDownloader {
     }
 
     /**
-     * Downlaods given version of VAL.
+     * Downloads given version of VAL.
      * @param buildId VAL build ID to download artifacts from
      * @param destinationDirectory Directory where VAL binaries are to be downloaded locally.
+     * @param platform optionally specify the platform
+     * @param architecture optionally specify the architecture
      */
-    async download(buildId: number, destinationDirectory: string): Promise<ValVersion> {
+    async download(buildId: number, destinationDirectory: string, platform?: Platform, architecture?: Architecture): Promise<ValVersion> {
 
-        const artifactName = ValDownloader.getBuildArtifactName();
+        const artifactName = ValDownloader.getBuildArtifactName(platform, architecture);
         if (!artifactName) {
             throw this.unsupportedOperatingSystem();
         }
@@ -143,28 +153,33 @@ export class ValDownloader {
         }
     }
 
-    private static getBuildArtifactName(): string | null {
-        switch (os.platform()) {
-            case "win32":
-                switch (os.arch()) {
-                    case "x64":
+    /**
+     * Calculates the artifact name for this computer, or given the specified `platform` and `architecture`.
+     * @param platform optionally specify the platform
+     * @param architecture optionally specify the architecture
+     */
+    private static getBuildArtifactName(platform?: Platform, architecture?: Architecture): string | null {
+        switch (platform ?? os.platform()) {
+            case WIN32:
+                switch (architecture ?? os.arch()) {
+                    case X64:
                         return "win64";
-                    case "x32":
+                    case X32:
                     case "ia32":
-                        return "win32";
+                        return WIN32;
                     default:
                         return null;
                 }
-            case "linux":
-                switch (os.arch()) {
-                    case "x64":
+            case LINUX:
+                switch (architecture ?? os.arch()) {
+                    case X64:
                         return "linux64";
                     default:
                         return null;
                 }
-            case "darwin":
-                switch (os.arch()) {
-                    case "x64":
+            case DARWIN:
+                switch (architecture ?? os.arch()) {
+                    case X64:
                         return "macos64";
                     default:
                         return null;

@@ -4,7 +4,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { ValDownloader, writeValManifest } from './ValDownloader';
+import { Architecture, DARWIN, LINUX, Platform, ValDownloader, WIN32, writeValManifest, X32, X64 } from './ValDownloader';
 import yargs from 'yargs';
 import path from 'path';
 
@@ -21,12 +21,22 @@ const argv = yargs.option('buildId', {
     description: 'Target for the binaries to be unzipped into',
     type: "string",
     default: '.'
+}).option('platform', {
+    description: 'Optionally specify the platform (defaults to the local machine operating system)',
+    choices: [WIN32, LINUX, DARWIN],
+    default: undefined,
+    type: "string"
+}).option('architecture', {
+    description: 'Optionally specify the CPU architecture (defaults to local machine CPU architecture)',
+    choices: [X32, X64],
+    default: undefined,
+    type: "string"
 })
     .help()
     .argv;
 
-async function download(buildId: number, destination: string): Promise<void> {
-    const manifest = await new ValDownloader().download(buildId, destination);
+async function download(buildId: number, destination: string, platform?: Platform, architecture?: Architecture): Promise<void> {
+    const manifest = await new ValDownloader().download(buildId, destination, platform, architecture);
     if (!manifest) {
         throw new Error('Failed to download VAL.');
     }
