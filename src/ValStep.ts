@@ -110,7 +110,7 @@ export class ValStep extends EventEmitter {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
 
-        return new Promise<TimedVariableValue[]>(async (resolve, reject) => {
+        return new Promise<TimedVariableValue[] | undefined>(async (resolve, reject) => {
             this.logValStepCommand(options, args);
             const child = that.childProcess = process.spawn(this.createValCommand(options), args, options);
 
@@ -186,7 +186,7 @@ export class ValStep extends EventEmitter {
      * @param options ValStep execution options
      * @returns final variable values, or null/undefined in case the tool fails
      */
-    async execute(happenings: Happening[], options?: ValStepOptions): Promise<TimedVariableValue[]> {
+    async execute(happenings: Happening[], options?: ValStepOptions): Promise<TimedVariableValue[] | undefined> {
         if (this.childProcess) {
             throw new Error(`This ValStep instance was already used. Create new one`);
         }
@@ -195,7 +195,7 @@ export class ValStep extends EventEmitter {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
 
-        return new Promise<TimedVariableValue[]>(async (resolve, reject) => {
+        return new Promise<TimedVariableValue[] | undefined>(async (resolve, reject) => {
             this.logValStepCommand(options, args);
             const child = that.childProcess = process.execFile(this.createValCommand(options), args, { cwd: options?.cwd, timeout: 2000, maxBuffer: 2 * 1024 * 1024 }, async (error, stdout, stderr) => {
                 if (error) {
