@@ -1,6 +1,6 @@
 {
   "name": "ai-planning-val",
-  "version": "2.7.2",
+  "version": "2.7.3",
   "description": "Javascript/typescript wrapper for VAL (AI Planning plan validation and evaluation tools from KCL Planning department and the planning community around the ICAPS conference).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -55,6 +55,6 @@
     "pddl-workspace": "^7.0.0",
     "request": "^2.88.2",
     "tmp-promise": "2.0.2",
-    "yargs": "^15.3.1"
+    "yargs": "^17.2.1"
   }
 }
