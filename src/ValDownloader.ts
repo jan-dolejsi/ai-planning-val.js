@@ -62,9 +62,10 @@ export class ValDownloader {
         const url = `https://dev.azure.com/schlumberger/4e6bcb11-cd68-40fe-98a2-e3777bfec0a6/_apis/build/builds/${buildId}/artifacts?artifactName=${artifactName}&api-version=5.2-preview.5&%24format=zip`;
 
         await this.downloadDelegate(url, zipPath, 'Downloading VAL tools...');
-        console.log("Done downloading." + url);
+        console.log("Done downloading.");
 
         const dropEntries = await this.unzip(zipPath, destinationDirectory);
+        console.log("Done unzipping.");
 
         const zipEntries = dropEntries
             .filter(entry => entry.endsWith('.zip'));
@@ -74,6 +75,7 @@ export class ValDownloader {
         }
 
         const valZipFileName = zipEntries[0];
+        console.log(`Zip found ${valZipFileName}`);
 
         const versionMatch = /^Val-(\d{8}\.\d+(\.DRAFT)?(-Linux)?)/.exec(path.basename(valZipFileName));
         if (!versionMatch) {
@@ -115,22 +117,31 @@ export class ValDownloader {
     }
 
     private async unzip(zipPath: string, destinationDirectory: string): Promise<string[]> {
+        console.log(`Unzipping ${zipPath} to ${destinationDirectory}`);
         const zip = new AdmZip(zipPath);
         const entryNames = zip.getEntries()
             .filter(entry => !entry.isDirectory)
             .map(entry => entry.entryName);
 
-        return new Promise<string[]>((resolve, reject) => {
-            zip.extractAllToAsync(destinationDirectory, true, err => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                else {
-                    resolve(entryNames);
-                }
-            });
-        });
+        console.log(`Unzipping ${entryNames.join(', ')}`);
+
+        zip.extractAllTo(destinationDirectory, true);
+        console.log(`Unzipped ${entryNames.join(', ')}`);
+
+        return entryNames;
+
+        // return await new Promise<string[]>((resolve, reject) => {
+        //     zip.extractAllToAsync(destinationDirectory, true, err => {
+        //         console.log(`Done unzipping to ${destinationDirectory}, err: ${err}`)
+        //         if (err) {
+        //             reject(err);
+        //             return;
+        //         }
+        //         else {
+        //             resolve(entryNames);
+        //         }
+        //     });
+        // });
     }
 
     static async deleteAll(files: string[]): Promise<void> {
@@ -249,7 +260,9 @@ export async function readValManifest(manifestPath: string): Promise<ValVersion>
 export async function writeValManifest(manifestPath: string, valVersion: ValVersion): Promise<void> {
     const json = JSON.stringify(valVersion, null, 2);
     try {
+        console.log(`Saving Manifest to ${manifestPath}`);
         await fs.promises.writeFile(manifestPath, json, { encoding: 'utf8' });
+        console.log(`Manifest saved to ${manifestPath}`);
     }
     catch (err) {
         if (err instanceof Error) {
