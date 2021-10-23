@@ -237,8 +237,12 @@ export async function readValManifest(manifestPath: string): Promise<ValVersion>
         const versionAsString = await fs.promises.readFile(manifestPath, { encoding: 'utf8' });
         return JSON.parse(versionAsString);
     }
-    catch (err) {
-        throw new Error(`Error reading VAL manifest ${err.name}: ${err.message}`);
+    catch (err: unknown) {
+        if (err instanceof Error) {
+            throw new Error(`Error reading VAL manifest ${err.name}: ${err.message}`);
+        } else {
+            throw err;
+        }
     }
 }
 
@@ -248,7 +252,11 @@ export async function writeValManifest(manifestPath: string, valVersion: ValVers
         await fs.promises.writeFile(manifestPath, json, { encoding: 'utf8' });
     }
     catch (err) {
-        throw new Error(`Error saving VAL manifest ${err.name}: ${err.message}`);
+        if (err instanceof Error) {
+            throw new Error(`Error saving VAL manifest ${err.name}: ${err.message}`);
+        } else {
+            throw err;
+        }
     }
 }
 
