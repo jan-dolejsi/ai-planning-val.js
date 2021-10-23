@@ -9,7 +9,7 @@
   },
   "scripts": {
     "downloadVal": "node ./dist/downloadVal.js --destination=./val",
-    "test": "mocha -- out/test/*.js",
+    "test": "mocha -- out/test/*.js --no-parallel",
     "pretest": "npx eslint ./src/*.ts && npm run compile && npm run downloadVal",
     "build": "npx tsc",
     "compile": "npx tsc && npm run copyToDist",

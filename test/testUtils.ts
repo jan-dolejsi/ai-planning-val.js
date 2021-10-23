@@ -37,7 +37,7 @@ export function copyFileSync(source: string, target: string): void {
         }
     }
 
-    fs.writeFileSync(targetFile, fs.readFileSync(source));
+    fs.writeFileSync(targetFile, fs.readFileSync(source, { flag: 'r' }));
 }
 
 export function copyFolderRecursiveSync(source: string, target: string): void {

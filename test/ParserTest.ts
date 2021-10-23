@@ -101,7 +101,7 @@ describe('Parser', () => {
                     fs.rmdirSync(valPathWithSpace, { recursive: true });
                 }
             }
-        });
+        }).retries(10);
     });
 
     describe('#processOutput', () => {
