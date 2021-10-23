@@ -8,6 +8,7 @@ const VAL_DOWNLOAD = 'val';
 export async function getDownloadedManifest(): Promise<ValVersion> {
     const manifestPath = path.join(VAL_DOWNLOAD, 'val.json');
     if (!(fs.existsSync(manifestPath))) {
+        console.error(`Expected ${manifestPath}`);
         throw new Error("VAL not downloaded");
     }
     return await readValManifest(manifestPath);
