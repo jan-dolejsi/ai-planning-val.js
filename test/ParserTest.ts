@@ -82,11 +82,12 @@ describe('Parser', () => {
         it('can run from a path with a space', async () => {
             const origValPath = path.dirname(parserPath);
             const parserFileName = path.basename(parserPath);
-            const valPathWithSpace = path.join('path with space', origValPath);
+            const pathWithSpace = 'path with space';
+            const valPathWithSpace = path.join(pathWithSpace, origValPath);
             let copiedJustNow = false
             try {
-                if (!fs.existsSync(valPathWithSpace)) {
-                    copyFolderRecursiveSync(origValPath, valPathWithSpace);
+                if (!fs.existsSync(pathWithSpace)) {
+                    copyFolderRecursiveSync(testUtils.VAL_DOWNLOAD, valPathWithSpace);
                     copiedJustNow = true;
                 }
                 const parserPathWithSpace = path.join(valPathWithSpace, parserFileName);

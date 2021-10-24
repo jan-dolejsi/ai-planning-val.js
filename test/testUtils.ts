@@ -3,7 +3,7 @@ import fs from 'fs';
 import { readValManifest, ValVersion } from './src';
 
 
-const VAL_DOWNLOAD = 'val';
+export const VAL_DOWNLOAD = 'val';
 
 export async function getDownloadedManifest(): Promise<ValVersion> {
     const manifestPath = path.join(VAL_DOWNLOAD, 'val.json');

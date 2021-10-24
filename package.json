@@ -8,12 +8,12 @@
     "downloadVal": "./dist/downloadVal.js"
   },
   "scripts": {
-    "downloadVal": "node ./dist/downloadVal.js --destination=./val && copyfiles --error --verbose ./val/** \"./path with space\"",
+    "downloadVal": "node ./dist/downloadVal.js --destination=./val && node ./dist/downloadVal.js --destination=\"./path with space/val\"",
     "test": "mocha -- out/test/*.js --no-parallel",
     "pretest": "npx eslint ./src/*.ts && npm run compile && npm run downloadVal",
     "build": "npx tsc",
     "compile": "npx tsc && npm run copyToDist",
-    "copyToDist": "copyfiles --error --verbose --flat ./out/src/*.* ./dist/",
+    "copyToDist": "copyfiles --error --verbose --up 2 \"./out/src/**/*.*\" ./dist/",
     "prepack": "npm run test && npm run copyToDist",
     "watch": "npx tsc -w"
   },
