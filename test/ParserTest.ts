@@ -82,9 +82,13 @@ describe('Parser', () => {
         it('can run from a path with a space', async () => {
             const origValPath = path.dirname(parserPath);
             const parserFileName = path.basename(parserPath);
-            const valPathWithSpace = origValPath + ' with path';
+            const valPathWithSpace = path.join('path with space', origValPath);
+            let copiedJustNow = false
             try {
-                copyFolderRecursiveSync(origValPath, valPathWithSpace);
+                if (!fs.existsSync(valPathWithSpace)) {
+                    copyFolderRecursiveSync(origValPath, valPathWithSpace);
+                    copiedJustNow = true;
+                }
                 const parserPathWithSpace = path.join(valPathWithSpace, parserFileName);
 
                 // GIVEN
@@ -97,11 +101,11 @@ describe('Parser', () => {
                 expect(parsingProblems).to.have.length(0);
 
             } finally {
-                if (fs.existsSync(valPathWithSpace)) {
+                if (fs.existsSync(valPathWithSpace) && copiedJustNow) {
                     fs.rmdirSync(valPathWithSpace, { recursive: true });
                 }
             }
-        }).retries(10);
+        });
     });
 
     describe('#processOutput', () => {

@@ -8,7 +8,7 @@
     "downloadVal": "./dist/downloadVal.js"
   },
   "scripts": {
-    "downloadVal": "node ./dist/downloadVal.js --destination=./val",
+    "downloadVal": "node ./dist/downloadVal.js --destination=./val && copyfiles --error --verbose ./val/** \"./path with space\"",
     "test": "mocha -- out/test/*.js --no-parallel",
     "pretest": "npx eslint ./src/*.ts && npm run compile && npm run downloadVal",
     "build": "npx tsc",
