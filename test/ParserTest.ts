@@ -9,6 +9,7 @@ import { URI } from 'vscode-uri';
 import { parser, DomainInfo, ProblemInfo } from 'pddl-workspace';
 import * as testUtils from './testUtils';
 import { Parser, ParserRunContext, ProblemPattern } from './src';
+import { copyFolderRecursiveSync } from './testUtils';
 
 const DOMAIN_PATH = 'test/samples/temporal-numeric/domain.pddl';
 const PROBLEM_PATH = 'test/samples/temporal-numeric/problem.pddl';
@@ -81,9 +82,14 @@ describe('Parser', () => {
         it('can run from a path with a space', async () => {
             const origValPath = path.dirname(parserPath);
             const parserFileName = path.basename(parserPath);
-            const valPathWithSpace = origValPath + ' with path';
+            const pathWithSpace = 'path with space';
+            const valPathWithSpace = path.join(pathWithSpace, origValPath);
+            let copiedJustNow = false
             try {
-                fs.renameSync(origValPath, valPathWithSpace);
+                if (!fs.existsSync(pathWithSpace)) {
+                    copyFolderRecursiveSync(testUtils.VAL_DOWNLOAD, valPathWithSpace);
+                    copiedJustNow = true;
+                }
                 const parserPathWithSpace = path.join(valPathWithSpace, parserFileName);
 
                 // GIVEN
@@ -96,7 +102,9 @@ describe('Parser', () => {
                 expect(parsingProblems).to.have.length(0);
 
             } finally {
-                fs.renameSync(valPathWithSpace, origValPath);
+                if (fs.existsSync(valPathWithSpace) && copiedJustNow) {
+                    fs.rmdirSync(valPathWithSpace, { recursive: true });
+                }
             }
         });
     });
