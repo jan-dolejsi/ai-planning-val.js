@@ -7,4 +7,5 @@ out/
 *-*.tgz
 /.github/
 /val/
+/path with space/
 *.cmd
