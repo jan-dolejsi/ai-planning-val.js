@@ -46,6 +46,7 @@ export interface ValStepInteractiveOptions extends ValStepOptions {
 
 /**
  * Wraps the Valstep executable.
+ * @see https://github.com/KCL-Planning/VAL/blob/master/applications/README.md#valstep
  */
 export class ValStep extends EventEmitter {
 
@@ -181,7 +182,7 @@ export class ValStep extends EventEmitter {
     }
 
     /**
-     * Executes series of plan happenings.
+     * Executes series of plan happenings capturing the PDDL problem that VAL outputs at the end.
      * @param happenings plan happenings to play
      * @param options ValStep execution options
      * @returns final variable values, or null/undefined in case the tool fails
