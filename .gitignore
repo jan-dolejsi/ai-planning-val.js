@@ -11,3 +11,5 @@ path with space/val/
 
 # logs
 **/logs/
+
+.vscode/diff/
