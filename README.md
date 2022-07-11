@@ -70,15 +70,16 @@ const manifest = await new ValDownloader().download(60, './val_binaries/');
 ## [Parse](https://github.com/KCL-Planning/VAL/blob/master/applications/README.md#parser) PDDL Domains and Problems
 
 ```typescript
-import { parser, Happening, HappeningType } from 'pddl-workspace';
-import { ValStep } from 'ai-planning-val';
+import { URI } from 'vscode-uri';
+import { parser } from 'pddl-workspace';
+import { Parser } from 'ai-planning-val';
 ```
 
 ```typescript
 const domain = parser.PddlDomainParser.parseText(domainText, URI.file('domain'));
 const problem = await parser.PddlProblemParser.parseText(problemText, URI.file('problem'));
 
-const pddlParser = new Parser({ parserPath: parserPath });
+const pddlParser = new Parser({ executablePath: parserPath });
 
 const parsingProblems = await pddlParser.validate(domain, problem);
 
