@@ -1,4 +1,5 @@
 export * from './HappeningsToValStep';
+export * from './PlanValidator';
 export * from './PlanEvaluator';
 export * from './PlanFunctionEvaluator';
 export * from './ValStep';

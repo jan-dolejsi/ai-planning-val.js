@@ -8,6 +8,7 @@ Javascript/typescript wrapper for VAL (plan validation tools from [KCL Planning 
 - [VAL.js - AI Planning Plan Validation](#valjs---ai-planning-plan-validation)
   - [VAL Download](#val-download)
   - [Parse PDDL Domains and Problems](#parse-pddl-domains-and-problems)
+  - [Validate plans](#validate-plans)
   - [ValStep state-by-state plan evaluation](#valstep-state-by-state-plan-evaluation)
     - [Batch plan evaluation](#batch-plan-evaluation)
     - [Batch evaluation with notification events fired for each intermediate state](#batch-evaluation-with-notification-events-fired-for-each-intermediate-state)
@@ -101,6 +102,33 @@ At line: 10 error: Syntax error in domain
 The `Parser` class may be also used to call other PDDL parser. To do that, override the `getSyntax()` and `createPatternMatchers()` methods.
 
 To see an custom `Parser` implementation sample, see the `MockParser` class in `ParserTest.ts` and the `mock-parser.js`.
+
+## [Validate](https://github.com/KCL-Planning/VAL/blob/master/applications/README.md#Validate) plans
+
+```typescript
+function printToConsole(text: string): void {
+    console.log(text);
+}
+
+const validator = new PlanValidator(printToConsole);
+
+const domain = parser.PddlDomainParser.parseText(domainText);
+const problem = await parser.PddlProblemParser.parseText(problemText);
+const plan = new parser.PddlPlanParser().parseText(planText, 1e-3, planUri);
+
+const validationProblems = await validator.validate(domain, problem, plan, { cwd: '.', validatePath: 'path/to/validate.exe', epsilon: 1e-3 });
+
+validationProblems.getPlanProblems().forEach((issue) => {
+    console.log(`At ${issue.range.start.line}:${issue.range.start.character} ${issue.severity}: ${issue.problem}`);
+});
+```
+
+The above may print something like:
+
+```text
+At 10:1 error: Goal not achieved.
+At 10:1 error: Set p to true.
+```
 
 ## [ValStep](https://github.com/KCL-Planning/VAL/blob/master/applications/README.md#valstep) state-by-state plan evaluation
 

@@ -140,7 +140,7 @@ export class Parser {
             child.stdout.on('data', output => {
                 const outputString = trailingLine + output.toString("utf8");
                 this.processOutput(outputString, context, parsingProblems);
-                trailingLine = outputString.substr(outputString.lastIndexOf('\n'));
+                trailingLine = outputString.substring(outputString.lastIndexOf('\n'));
             });
 
             child.on("error", error => {
