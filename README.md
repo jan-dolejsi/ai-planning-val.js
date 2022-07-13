@@ -174,6 +174,11 @@ valStep.executeBatch(allHappenings, {
 ### Batch evaluation with notification events fired for each intermediate state
 
 ```typescript
+import { parser, Happening, HappeningType } from 'pddl-workspace';
+import { ValStep } from 'ai-planning-val';
+```
+
+```typescript
 const valStep = new ValStep(domain, problem);
 
 valStep.onStateUpdated((happenings, newValues) => {
@@ -184,7 +189,9 @@ valStep.onStateUpdated((happenings, newValues) => {
     // prints p=true
 });
 
-const valuesAtEnd = await valStep.executeIncrementally(allHappenings);
+const valuesAtEnd = await valStep.executeIncrementally(allHappenings, {
+  valStepPath: 'path/to/ValStep.exe'
+});
 ```
 
 ### Interactive plan execution
@@ -223,11 +230,13 @@ Let's consider this temporal and numeric PDDL [domain](test/samples/temporal-num
 ```
 
 ```typescript
-const plan = parser.PddlPlanParser.parseText(planText, 0.001, 'test/samples/temporal-numeric/problem.plan');
+const plan = new parser.PddlPlanParser().parseText(planText, 0.001);
 
 const planEvaluator = new PlanEvaluator();
 const valStepPath = './val-binaries/..../ValStep';
-const finalState = await planEvaluator.evaluate(domain, problem, plan, { valStepPath: valStepPath });
+const finalState = await planEvaluator.evaluate(domain, problem, plan, {
+  valStepPath: 'path/to/ValStep.exe'
+});
 console.log(JSON.stringify(finalState, null, 2));
 ```
 
@@ -266,7 +275,7 @@ Evaluates numeric function values as they change in the course of the plan.
 
 ```typescript
 const valueSeq = new ValueSeq(domainPath, problemPath, planPath, {
-    valueSeqPath: valueSeqPath,
+    valueSeqPath: 'path/to/ValueSeq.exe',
     adjustDuplicateTimeStamp: true,
     verbose: true
 });
@@ -316,13 +325,14 @@ Evaluates numeric function values as they change in the course of the plan.
 ```typescript
 const planObj = new Plan(plan.getSteps(), domain, problem);
 const planEvaluator = new PlanFunctionEvaluator(planObj, {
-    valueSeqPath: valueSeqPath, valStepPath: valStepPath, shouldGroupByLifted: true
+    valueSeqPath: 'path/to/valueSeq.exe', valStepPath: 'path/to/valStep.exe', shouldGroupByLifted: true
 });
 
 const functionValues = await planEvaluator.evaluate();
 
 // print out the data for each graph
-[...functionValues.values()].forEach(variableValues => {
+functionValues.forEach((variableValues, variable) => {
+    console.log(`Variable: ${variableValues}`);
     console.log(variableValues.toCsv());
 });
 ```
