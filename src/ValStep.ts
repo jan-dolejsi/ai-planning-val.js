@@ -105,7 +105,7 @@ export class ValStep extends EventEmitter {
         }
 
         let args = await this.createValStepArgs();
-        const valStepsPath = await Util.toFile('valSteps', '.valsteps', this.valStepInput);
+        const valStepsPath = await Util.toFile(this.valStepInput, { prefix: 'valSteps', suffix: '.valsteps' });
         args = ['-i', valStepsPath, ...args];
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -174,7 +174,7 @@ export class ValStep extends EventEmitter {
                 } else {
                     console.warn(`Did not find happening group corresponding to time ${time}.`);
                 }
-        });
+            });
 
         valStepInput += ValStep.QUIT_INSTRUCTION;
 
@@ -329,8 +329,8 @@ export class ValStep extends EventEmitter {
     private async createValStepArgs(): Promise<string[]> {
         // copy editor content to temp files to avoid using out-of-date content on disk
         try {
-            const domainFilePath = await Util.toPddlFile('domain', this.domainInfo.getText());
-            const problemFilePath = await Util.toPddlFile('problem', this.problemInfo.getText()); // todo: this is where we are sending un-pre-processed problem text when rendering plan
+            const domainFilePath = await Util.toPddlFile(this.domainInfo.getText(), { prefix: 'domain' });
+            const problemFilePath = await Util.toPddlFile(this.problemInfo.getText(), { prefix: 'problem' }); // todo: this is where we are sending un-pre-processed problem text when rendering plan
 
             const args = [domainFilePath, problemFilePath];
             return args;

@@ -9,6 +9,10 @@ import * as process from 'child_process';
 import { URI } from 'vscode-uri';
 import { Util } from './valUtils';
 
+const DOMAIN_PREFIX = "domain";
+const PROBLEM_PREFIX = "problem";
+const PLAN_PREFIX = "plan";
+
 /**
  * Plan validating using the VAL validator executable.
  */
@@ -19,9 +23,9 @@ export class PlanValidator {
 
     async validate(domain: DomainInfo, problem: ProblemInfo, plan: PlanInfo, options: { validatePath: string, epsilon?: number; cwd: string }): Promise<PlanValidationOutcome> {
         // copy editor content to temp files to avoid using out-of-date content on disk
-        const domainFilePath = await Util.toPddlFile('domain', domain.getText());
-        const problemFilePath = await Util.toPddlFile('problem', problem.getText());
-        const planFilePath = await Util.toPddlFile('plan', plan.getText());
+        const domainFilePath = await Util.toPddlFile(domain.getText(), { prefix: DOMAIN_PREFIX });
+        const problemFilePath = await Util.toPddlFile(problem.getText(), { prefix: PROBLEM_PREFIX });
+        const planFilePath = await Util.toPddlFile(plan.getText(), { prefix: PLAN_PREFIX });
 
         const args = ['-v',];
 

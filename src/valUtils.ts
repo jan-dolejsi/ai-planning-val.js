@@ -32,23 +32,60 @@ export class PddlFactory {
 
 export class Util {
 
-    static toFileSync(prefix: string, suffix: string, text: string): string {
-        const tempFile = tmp.fileSync({ mode: 0o644, prefix: prefix + '-', postfix: suffix });
+    /**
+     * Saves the `text` to temporary file.
+     * @param text file text
+     * @param options file creation options
+     */
+    static toFileSync(text: string, options: TempFileOptions): string {
+        const tempFile = tmp.fileSync(Util.toTmpFileOptions(options));
         fs.writeSync(tempFile.fd, text, 0, 'utf8');
         return tempFile.name;
     }
 
-    static async toFile(prefix: string, suffix: string, text: string): Promise<string> {
-        const tempFile = await tmp.file({ mode: 0o644, prefix: prefix + '-', postfix: suffix });
+    /**
+     * Saves the `text` to temporary file.
+     * @param text file text
+     * @param options file creation options
+     */
+    static async toFile(text: string, options: TempFileOptions): Promise<string> {
+        const tempFile = await tmp.file(Util.toTmpFileOptions(options));
         await fs.promises.writeFile(tempFile.path, text, { encoding: 'utf8' });
         return tempFile.path;
     }
 
-    static toPddlFileSync(prefix: string, text: string): string {
-        return Util.toFileSync(prefix, '.pddl', text);
+    private static toTmpFileOptions(options: TempFileOptions) {
+        return { mode: 0o644, prefix: (options.prefix ?? 'tmp') + '-', postfix: options.suffix, tmpdir: options.tmpdir };
     }
 
-    static async toPddlFile(prefix: string, text: string): Promise<string> {
-        return Util.toFile(prefix, '.pddl', text);
+    /** 
+     * Saves the text to a temporary .pddl file
+     * @param text file text
+     * @param options file name options
+    */
+    static toPddlFileSync(text: string, options: TempFileNameOptions): string {
+        return Util.toFileSync(text, Object.assign(options, { suffix: '.pddl' }));
     }
+
+    /** 
+     * Saves the text to a temporary .pddl file
+     * @param text file text
+     * @param options file name options
+    */
+    static async toPddlFile(text: string, options: TempFileNameOptions): Promise<string> {
+        return Util.toFile(text, Object.assign(options, { suffix: '.pddl' }));
+    }
+}
+
+export interface TempFileOptions extends TempFileNameOptions {
+    /** File extension. It should start with a period character. */
+    suffix: string;
+}
+
+
+export interface TempFileNameOptions {
+    /** File prefix. If used, a hyphen will be added between the prefix and the generated temp file name. */
+    prefix?: string;
+    /** Allows you to override the system's root tmp directory. */
+    tmpdir?: string;
 }

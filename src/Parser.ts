@@ -49,12 +49,12 @@ export class Parser {
     }
 
     async validate(domainInfo: DomainInfo, problemInfo?: ProblemInfo): Promise<ParsingProblems> {
-        const domainFilePath = Util.toPddlFileSync("domain", domainInfo.getText());
+        const domainFilePath = Util.toPddlFileSync(domainInfo.getText(), { prefix: "domain" });
 
         const parsingProblems = new ParsingProblems();
 
         if (!problemInfo) {
-            const problemFilePath = Util.toPddlFileSync("problem", PddlFactory.createEmptyProblem('dummy', domainInfo.name));
+            const problemFilePath = Util.toPddlFileSync(PddlFactory.createEmptyProblem('dummy', domainInfo.name), { prefix: "problem" });
 
             const context: ParserRunContext = {
                 domain: domainInfo,
@@ -65,7 +65,7 @@ export class Parser {
             return await this.validateProblem(domainFilePath, problemFilePath, context, parsingProblems);
         }
         else {
-            const problemFilePath = Util.toPddlFileSync("problem", problemInfo.getText());
+            const problemFilePath = Util.toPddlFileSync(problemInfo.getText(), { prefix: "problem" });
 
             const context: ParserRunContext = {
                 domain: domainInfo,
