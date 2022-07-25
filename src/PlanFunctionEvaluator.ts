@@ -19,6 +19,11 @@ export interface PlanFunctionEvaluatorOptions extends ValueSeqOptions {
     valStepPath?: string;
 }
 
+const DOMAIN_PREFIX = "domain";
+const PROBLEM_PREFIX = "problem";
+const PLAN_PREFIX = "plan";
+
+
 /** Evaluates numeric function values in the course of the plan. */
 export class PlanFunctionEvaluator {
 
@@ -58,9 +63,9 @@ export class PlanFunctionEvaluator {
      * Evaluates the functions individually, or in groups by lifted function.
      */
     async evaluate(): Promise<Map<Variable, GroundedFunctionValues>> {
-        const domainFile = await Util.toPddlFile("domain", this.domain.getText());
-        const problemFile = await Util.toPddlFile("problem", this.problem.getText());
-        const planFile = await Util.toPddlFile("plan", this.plan.getText());
+        const domainFile = await Util.toPddlFile(this.domain.getText(), { prefix: DOMAIN_PREFIX });
+        const problemFile = await Util.toPddlFile(this.problem.getText(), { prefix: PROBLEM_PREFIX });
+        const planFile = await Util.toPddlFile(this.plan.getText(), { prefix: PLAN_PREFIX });
 
         const chartData = new Map<Variable, GroundedFunctionValues>();
 
@@ -83,9 +88,9 @@ export class PlanFunctionEvaluator {
     }
 
     async evaluateMetrics(): Promise<Map<string, FunctionValues>> {
-        const domainFile = await Util.toPddlFile("domain", this.domain.getText());
-        const problemFile = await Util.toPddlFile("problem", this.problem.getText());
-        const planFile = await Util.toPddlFile("plan", this.plan.getText());
+        const domainFile = await Util.toPddlFile(this.domain.getText(), { prefix: DOMAIN_PREFIX });
+        const problemFile = await Util.toPddlFile(this.problem.getText(), { prefix: PROBLEM_PREFIX });
+        const planFile = await Util.toPddlFile(this.plan.getText(), { prefix: PLAN_PREFIX });
 
         return await new ValueSeq(domainFile, problemFile, planFile, this.options).evaluateMetric();
     }
@@ -93,9 +98,9 @@ export class PlanFunctionEvaluator {
     async evaluateExpressionInputs(expression: NumericExpression): Promise<Map<string, FunctionValues>> {
         const inputVariables = expression.getVariables();
 
-        const domainFile = await Util.toPddlFile("domain", this.domain.getText());
-        const problemFile = await Util.toPddlFile("problem", this.problem.getText());
-        const planFile = await Util.toPddlFile("plan", this.plan.getText());
+        const domainFile = await Util.toPddlFile(this.domain.getText(), { prefix: DOMAIN_PREFIX });
+        const problemFile = await Util.toPddlFile(this.problem.getText(), { prefix: PROBLEM_PREFIX });
+        const planFile = await Util.toPddlFile(this.plan.getText(), { prefix: PLAN_PREFIX });
 
         return await new ValueSeq(domainFile, problemFile, planFile, this.options).evaluate(inputVariables);
     }
