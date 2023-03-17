@@ -12,7 +12,7 @@ async function assertExists(targetDirectory: string, relativePath?: string, tool
     expect(exists, `File ${completePath} should exist.`).to.be.equal(true);
 }
 
-const expectedBuildId = 60;
+const expectedBuildId = 77;
 const VAL_DIRECTORY = 'val';
 export const VAL_MANIFEST = path.join('.', VAL_DIRECTORY, 'val.json');
 const VAL_DIRECTORY_ABS = path.resolve(__dirname, '..', '..', VAL_DIRECTORY);
@@ -21,7 +21,7 @@ describe("ValDownloader", () => {
 
     describe("#download()", () => {
 
-        it.skip("downloads build", async () => {
+        it("downloads build", async () => {
             await utils.afs.mkdirIfDoesNotExist(VAL_DIRECTORY_ABS, 0x755);
             const downloadedVersion = await new ValDownloader().download(expectedBuildId, VAL_DIRECTORY_ABS);
             expect(downloadedVersion).to.not.be.undefined;

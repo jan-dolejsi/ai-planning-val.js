@@ -63,12 +63,16 @@ export function getFile(url: URL, localFilePath: string): Promise<void> {
             if (res.statusCode && res.statusCode >= 400) {
                 reject(new Error("Downloading VAL binaries failed with HTTP status code " + res.statusCode));
             }
-            res.pipe(localFile);
-            res.on('close', () => {
+            res.on('error', err => {
+                reject(err);
+            });
+
+            // pipe the stream to a file and wait for it to finish
+            res.pipe(localFile)
+            .on('finish', () => {
                 console.log("Downloaded %s to %s", url, localFilePath);
                 resolve();
-            });
-            res.on('error', err => {
+            }).on('error', err => {
                 reject(err);
             });
         });
