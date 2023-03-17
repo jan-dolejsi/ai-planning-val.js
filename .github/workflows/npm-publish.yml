@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [14.x, 16.x]
         os: [windows-latest, ubuntu-20.04, macos-latest]
       fail-fast: false
 
@@ -36,10 +36,10 @@ jobs:
     if: success() && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
           registry-url: https://registry.npmjs.org/
       - run: npm install
       - run: npm publish --access public
