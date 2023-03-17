@@ -4,6 +4,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { URL } from 'url';
 import * as path from 'path';
 import { utils } from 'pddl-workspace';
 import * as fs from 'fs';
@@ -38,7 +39,7 @@ export class ValDownloader {
 
     protected async downloadDelegate(url: string, zipPath: string, message: string): Promise<void> {
         console.log(message);
-        return getFile(url, zipPath);
+        return getFile(new URL(url), zipPath);
     }
 
     /**
