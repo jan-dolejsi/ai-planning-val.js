@@ -65,6 +65,7 @@ export function getFile(url: URL, localFilePath: string): Promise<void> {
             }
             res.pipe(localFile);
             res.on('close', () => {
+                console.log("Downloaded %s to %s", url, localFilePath);
                 resolve();
             });
             res.on('error', err => {
