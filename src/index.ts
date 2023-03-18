@@ -9,3 +9,4 @@ export * from './PlanTimeSeriesParser';
 export * from './Parser';
 export * from './ProblemPattern';
 export * from './valUtils';
+export * from './httpUtils';
