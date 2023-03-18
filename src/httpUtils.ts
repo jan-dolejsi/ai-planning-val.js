@@ -10,11 +10,11 @@ import * as fs from 'fs';
 import { URL } from 'url';
 
 function get(url: URL): (options: http.RequestOptions | string | URL, callback?: (res: http.IncomingMessage) => void) => http.ClientRequest {
-    return url.protocol == 'https:' ? https.get : http.get;
+    return url.protocol === 'https:' ? https.get : http.get;
 }
 
 function request(url: URL): (url: string | URL, options: http.RequestOptions, callback?: (res: http.IncomingMessage) => void) => http.ClientRequest {
-    return url.protocol == 'https:' ? https.request : http.request;
+    return url.protocol === 'https:' ? https.request : http.request;
 }
 
 export async function getJson<T>(url: URL): Promise<T> {
@@ -79,7 +79,7 @@ export function getFile(url: URL, localFilePath: string): Promise<void> {
     });
 }
 
-export async function getText(url: URL): Promise<string> {
+export async function getText(url: URL, options?: { expectedContentType?: RegExp}): Promise<string> {
     return await new Promise((resolve, reject) => {
         get(url)(url, res => {
             if (res.statusCode && res.statusCode >= 300) {
@@ -87,12 +87,14 @@ export async function getText(url: URL): Promise<string> {
                 res.resume();
                 return;
             }
-            const contentType = res.headers['content-type'];
-            if (!contentType || !/^application\/json/.test(contentType)) {
-                reject(new Error('Invalid content-type.\n' +
-                    `Expected application/json but received ${contentType} from ${url}`));
-                res.resume();
-                return;
+            if (options?.expectedContentType) {
+                const contentType = res.headers['content-type'];
+                if (!contentType || !options.expectedContentType.test(contentType)) {
+                    reject(new Error('Invalid content-type.\n' +
+                        `Expected ${options.expectedContentType} but received ${contentType} from ${url}`));
+                    res.resume();
+                    return;
+                }                    
             }
             res.setEncoding('utf8');
             let rawData = '';
