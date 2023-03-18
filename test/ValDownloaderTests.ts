@@ -40,7 +40,7 @@ describe("ValDownloader", () => {
 
             console.log(`Downloaded: ${downloadedVersion?.files.length}`);
             expect(downloadedVersion?.buildId).to.be.equal(expectedBuildId);
-        }).timeout(10 * 1000);
+        }).timeout(10 * 1000).retries(3);
 
         it("changed chmod", async () => {
             const manifest = await readValManifest(VAL_MANIFEST);
