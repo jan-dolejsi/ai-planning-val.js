@@ -136,9 +136,9 @@ describe('PlanTimeSeriesParser', () => {
             const functionName = "function1";
             const liftedFunction = new Variable(functionName, [new Parameter("p1", typeName)]);
 
-            const function1 = liftedFunction.bind([new ObjectInstance('o1', typeName)]);
+            const function1 = liftedFunction.ground([new ObjectInstance('o1', typeName)]);
 
-            const function2 = liftedFunction.bind([new ObjectInstance('o2', typeName)]);
+            const function2 = liftedFunction.ground([new ObjectInstance('o2', typeName)]);
 
             const csvData = `${function1.getFullName()}
             0, 10
@@ -184,9 +184,9 @@ describe('PlanTimeSeriesParser', () => {
             const functionName = "function1";
             const liftedFunction = new Variable(functionName, [new Parameter("p1", typeName)]);
 
-            const function1 = liftedFunction.bind([new ObjectInstance('o1', typeName)]);
+            const function1 = liftedFunction.ground([new ObjectInstance('o1', typeName)]);
 
-            const function2 = liftedFunction.bind([new ObjectInstance('o2', typeName)]);
+            const function2 = liftedFunction.ground([new ObjectInstance('o2', typeName)]);
 
             const csvData = `${function1.getFullName()}
             0, 10

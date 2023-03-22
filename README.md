@@ -310,7 +310,7 @@ const valueSeq = new ValueSeq(domainPath, problemPath, planPath, {
 
 const f = domain.getFunction('f'); // for more details, see ValueSeqTest.ts
 if (!f) { fail(`'f' not found in domain`); }
-const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
+const fO1 = f.ground([new ObjectInstance('o1', 'type1')]);
 
 const values = await valueSeq.evaluate([fO1]);
 

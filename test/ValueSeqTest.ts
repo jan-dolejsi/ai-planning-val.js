@@ -44,7 +44,7 @@ describe('ValueSeq', () => {
 
             const f = domain.getFunction('f');
             if (!f) { fail(`'f' not found in domain`); }
-            const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
+            const fO1 = f.ground([new ObjectInstance('o1', 'type1')]);
 
             // WHEN
             const values = await valueSeq.evaluateForLifted(f, [fO1]);
@@ -71,7 +71,7 @@ describe('ValueSeq', () => {
 
             const f = domain.getFunction('f');
             if (!f) { fail(`'f' not found in domain`); }
-            const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
+            const fO1 = f.ground([new ObjectInstance('o1', 'type1')]);
 
             // WHEN
             const values = await valueSeq.evaluateForLifted(f, [fO1]);
@@ -103,7 +103,7 @@ describe('ValueSeq', () => {
 
             const f = domain.getFunction('f');
             if (!f) { fail(`'f' not found in domain`); }
-            const fO1 = f.bind([new ObjectInstance('o1', 'type1')]);
+            const fO1 = f.ground([new ObjectInstance('o1', 'type1')]);
 
             // WHEN
             const values = await valueSeq.evaluate([fO1]);

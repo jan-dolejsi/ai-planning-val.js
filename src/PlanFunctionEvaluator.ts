@@ -184,7 +184,7 @@ export class PlanFunctionEvaluator {
             .map(objectName => this.allConstantsAndObjects.getTypeOfCaseInsensitive(objectName)?.getObjectInstance(objectName))
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             .filter(o => !!o).map(o => o!);
-        return liftedVariable.bind(objects);
+        return liftedVariable.ground(objects);
     }
 
 
