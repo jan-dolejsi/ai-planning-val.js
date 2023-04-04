@@ -49,7 +49,9 @@ export class Parser {
     }
 
     async validate(domainInfo: DomainInfo, problemInfo?: ProblemInfo): Promise<ParsingProblems> {
-        const domainFilePath = Util.toPddlFileSync(domainInfo.getText(), { prefix: "domain" });
+        const origDomain = domainInfo.getText();
+        const compiledDomain = domainInfo.getCompilations().applyAll(origDomain);
+        const domainFilePath = Util.toPddlFileSync(compiledDomain, { prefix: "domain" });
 
         const parsingProblems = new ParsingProblems();
 
