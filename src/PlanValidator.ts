@@ -23,8 +23,8 @@ export class PlanValidator {
 
     async validate(domain: DomainInfo, problem: ProblemInfo, plan: PlanInfo, options: { validatePath: string, epsilon?: number; cwd: string }): Promise<PlanValidationOutcome> {
         // copy editor content to temp files to avoid using out-of-date content on disk
-        const domainFilePath = await Util.toPddlFile(domain.getText(), { prefix: DOMAIN_PREFIX });
-        const problemFilePath = await Util.toPddlFile(problem.getText(), { prefix: PROBLEM_PREFIX });
+        const domainFilePath = await Util.toPddlFile(domain.getCompiledText(), { prefix: DOMAIN_PREFIX });
+        const problemFilePath = await Util.toPddlFile(problem.getCompiledText(), { prefix: PROBLEM_PREFIX });
         const planFilePath = await Util.toPddlFile(plan.getText(), { prefix: PLAN_PREFIX });
 
         const args = ['-v',];

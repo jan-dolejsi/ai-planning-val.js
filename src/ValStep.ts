@@ -329,8 +329,8 @@ export class ValStep extends EventEmitter {
     private async createValStepArgs(): Promise<string[]> {
         // copy editor content to temp files to avoid using out-of-date content on disk
         try {
-            const domainFilePath = await Util.toPddlFile(this.domainInfo.getText(), { prefix: 'domain' });
-            const problemFilePath = await Util.toPddlFile(this.problemInfo.getText(), { prefix: 'problem' }); // todo: this is where we are sending un-pre-processed problem text when rendering plan
+            const domainFilePath = await Util.toPddlFile(this.domainInfo.getCompiledText(), { prefix: 'domain' });
+            const problemFilePath = await Util.toPddlFile(this.problemInfo.getCompiledText(), { prefix: 'problem' }); // todo: this is where we are sending un-pre-processed problem text when rendering plan
 
             const args = [domainFilePath, problemFilePath];
             return args;
@@ -498,8 +498,8 @@ export class ValStep extends EventEmitter {
         const domainFile = "domain.pddl";
         const problemFile = "problem.pddl";
         const inputFile = "happenings.valsteps";
-        await fs.promises.writeFile(path.join(casePath, domainFile), err.domain.getText(), { encoding: "utf-8" });
-        await fs.promises.writeFile(path.join(casePath, problemFile), err.problem.getText(), { encoding: "utf-8" });
+        await fs.promises.writeFile(path.join(casePath, domainFile), err.domain.getCompiledText(), { encoding: "utf-8" });
+        await fs.promises.writeFile(path.join(casePath, problemFile), err.problem.getCompiledText(), { encoding: "utf-8" });
         await fs.promises.writeFile(path.join(casePath, inputFile), err.valStepInput, { encoding: "utf-8" });
 
         const command = `:: The purpose of this batch file is to be able to reproduce the valstep error
