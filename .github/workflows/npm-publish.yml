@@ -14,7 +14,8 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-        os: [windows-latest, ubuntu-22.04, macos-latest]
+        # https://github.com/actions/runner-images?tab=readme-ov-file#available-images
+        os: [windows-2022, ubuntu-24.04, macos-14-large]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
